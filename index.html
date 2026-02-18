@@ -1356,7 +1356,19 @@
         </div>
 
         <div class="modal-step" data-step="5">
-          <div class="modal-step-title"><span class="modal-step-badge">6</span>Generate &amp; Copy the Token</div>
+          <div class="modal-step-title"><span class="modal-step-badge">6</span>Enable read:org Scope</div>
+          <div class="modal-step-desc">
+            Scroll down to the <strong>admin:org</strong> section and check the <strong>read:org</strong> checkbox.
+          </div>
+          <div class="modal-step-img"><img src="docs/5-1.png"
+              alt="Check the read:org scope under admin:org" /></div>
+          <div class="modal-tip">
+            <strong>Why this is needed:</strong> The <code>read:org</code> scope allows the dashboard to read org-level custom properties (Product, Repo-Class) used for filtering scan results.
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="6">
+          <div class="modal-step-title"><span class="modal-step-badge">7</span>Generate &amp; Copy the Token</div>
           <div class="modal-step-desc">
             Scroll to the bottom and click the green <strong>Generate token</strong> button.
           </div>
@@ -1380,7 +1392,7 @@
 
   <script>
     // ── PAT Guide Modal ──
-    const PAT_GUIDE_STEPS = 6;
+    const PAT_GUIDE_STEPS = 7;
     let patGuideStep = 0;
 
     function openPatGuide() {
