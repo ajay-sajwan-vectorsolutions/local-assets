@@ -395,6 +395,23 @@
       cursor: pointer;
     }
 
+    /* Repo group header in table */
+    .repo-group-header td {
+      background: #f1f5f9;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text);
+      border-bottom: 2px solid var(--border);
+    }
+    .repo-group-header:hover td { background: #f1f5f9; }
+    .repo-group-count {
+      font-weight: 400;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
     /* Config disabled during scan */
     .config-card.disabled .card-body {
       pointer-events: none;
@@ -525,7 +542,7 @@
           <table>
             <thead>
               <tr>
-                <th>Repository</th>
+                <th>File</th>
                 <th>Component</th>
                 <th>Installed</th>
                 <th>Latest</th>
@@ -1327,13 +1344,15 @@
       }
       noResults.classList.add('hidden');
 
-      // Sort: outdated first (major > minor > patch > unknown > current)
+      // Sort: group by repo first, then by severity within each repo
       results.sort((a, b) => {
+        const repoCompare = a.repo.localeCompare(b.repo);
+        if (repoCompare !== 0) return repoCompare;
         const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
         const da = diffOrder[a.diffType] ?? 5;
         const db = diffOrder[b.diffType] ?? 5;
         if (da !== db) return da - db;
-        return a.repo.localeCompare(b.repo) || a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name);
       });
 
       // Store sorted results for pagination
@@ -1348,16 +1367,31 @@
       const endIdx = Math.min(startIdx + pageSize, results.length);
       const pageResults = results.slice(startIdx, endIdx);
 
+      // Count components per repo (across all results, not just page)
+      const repoCountMap = {};
+      for (const r of results) { repoCountMap[r.repo] = (repoCountMap[r.repo] || 0) + 1; }
+
+      let lastRepo = '';
       for (let pi = 0; pi < pageResults.length; pi++) {
         const globalIdx = startIdx + pi;
         const r = pageResults[pi];
+
+        // Insert group header when repo changes
+        if (r.repo !== lastRepo) {
+          lastRepo = r.repo;
+          const groupRow = document.createElement('tr');
+          groupRow.className = 'repo-group-header';
+          groupRow.innerHTML = `<td colspan="7">${r.repo}<span class="repo-group-count">${repoCountMap[r.repo]} component${repoCountMap[r.repo] !== 1 ? 's' : ''}</span></td>`;
+          body.appendChild(groupRow);
+        }
+
         const shortName = r.name.replace('@vector-web-components/', '');
         const canExpand = r.diffType !== 'current';
 
         const tr = document.createElement('tr');
         tr.dataset.index = globalIdx;
         tr.innerHTML = `
-          <td><strong>${r.repo}</strong><br><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
+          <td><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
           <td>${shortName}</td>
           <td><span class="badge badge-gray">${r.version}</span></td>
           <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' : '<span class="badge badge-gray">N/A</span>'}</td>
