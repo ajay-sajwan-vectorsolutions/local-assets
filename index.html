@@ -423,12 +423,187 @@
       opacity: 1;
     }
 
+    /* PAT Help Modal */
+    .pat-help-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .pat-help-link:hover { color: var(--primary-dark); text-decoration: underline; }
+    .pat-help-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      width: 720px;
+      max-width: 92vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.2s;
+    }
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+    .modal-close:hover { background: var(--surface-alt); color: var(--text); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .modal-step { display: none; }
+    .modal-step.active { display: block; }
+    .modal-step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .modal-step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .modal-step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .modal-step-img {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface-alt);
+      text-align: center;
+    }
+    .modal-step-img img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-steps-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .modal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .modal-dot.active { background: var(--primary); }
+    .modal-dot.visited { background: #93c5fd; }
+    .modal-nav-btns { display: flex; gap: 8px; }
+    .modal-nav-btns button {
+      padding: 7px 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .modal-nav-btns button:hover:not(:disabled) { background: var(--surface-alt); border-color: var(--primary); color: var(--primary); }
+    .modal-nav-btns button:disabled { color: #cbd5e1; cursor: not-allowed; }
+    .modal-nav-btns .btn-next-step { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .modal-nav-btns .btn-next-step:hover { background: var(--primary-dark); }
+    .modal-tip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #1e40af;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
       .container { padding: 16px; }
       .form-grid { grid-template-columns: 1fr; }
       .metrics { grid-template-columns: repeat(2, 1fr); }
       .charts-row { grid-template-columns: 1fr; }
+      .modal { width: 95vw; }
     }
   </style>
 </head>
@@ -454,7 +629,7 @@
             <div id="orgName" style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">VectorLearning</div>
           </div>
           <div class="form-group">
-            <label>GitHub Personal Access Token</label>
+            <label>GitHub Personal Access Token <a class="pat-help-link" onclick="openPatGuide()"><span class="pat-help-icon">?</span> How to generate</a></label>
             <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" />
             <span class="help-text">Needs repo read access. Used only for in-browser GitHub API calls.</span>
           </div>
@@ -577,7 +752,145 @@
     </div>
   </div>
 
+  <!-- PAT Help Modal -->
+  <div class="modal-overlay" id="patGuideModal" onclick="closePatGuideOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>How to Generate a GitHub Personal Access Token</h2>
+        <button class="modal-close" onclick="closePatGuide()">&times;</button>
+      </div>
+      <div class="modal-body" id="patGuideBody">
+
+        <div class="modal-step active" data-step="0">
+          <div class="modal-step-title"><span class="modal-step-badge">1</span>Open GitHub Settings</div>
+          <div class="modal-step-desc">
+            Go to <strong>github.com</strong> and click your <strong>profile picture</strong> in the top-right corner. From the dropdown menu, click <strong>Settings</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/1.png" alt="Click profile icon then Settings" /></div>
+        </div>
+
+        <div class="modal-step" data-step="1">
+          <div class="modal-step-title"><span class="modal-step-badge">2</span>Go to Developer Settings</div>
+          <div class="modal-step-desc">
+            In the left sidebar, scroll all the way down to the bottom and click <strong>Developer settings</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/2.png" alt="Click Developer settings at the bottom of the sidebar" /></div>
+        </div>
+
+        <div class="modal-step" data-step="2">
+          <div class="modal-step-title"><span class="modal-step-badge">3</span>Select Tokens (classic)</div>
+          <div class="modal-step-desc">
+            Expand <strong>Personal access tokens</strong> and click <strong>Tokens (classic)</strong>. This dashboard uses classic tokens for GitHub API access.
+          </div>
+          <div class="modal-step-img"><img src="docs/3.png" alt="Click Personal access tokens then Tokens (classic)" /></div>
+        </div>
+
+        <div class="modal-step" data-step="3">
+          <div class="modal-step-title"><span class="modal-step-badge">4</span>Generate New Token (classic)</div>
+          <div class="modal-step-desc">
+            Click the <strong>Generate new token</strong> dropdown and select <strong>Generate new token (classic)</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/4.png" alt="Click Generate new token (classic)" /></div>
+        </div>
+
+        <div class="modal-step" data-step="4">
+          <div class="modal-step-title"><span class="modal-step-badge">5</span>Configure the Token</div>
+          <div class="modal-step-desc">
+            Fill in the token details:
+          </div>
+          <ul style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px 20px;line-height:1.8;">
+            <li><strong>Note</strong> &mdash; Give it a descriptive name (e.g. "vector-dashboard")</li>
+            <li><strong>Expiration</strong> &mdash; Choose an expiration period (30 days recommended)</li>
+            <li><strong>Scopes</strong> &mdash; Check the <strong>repo</strong> checkbox (full control of private repositories)</li>
+          </ul>
+          <div class="modal-step-img"><img src="docs/5.png" alt="Name the token, set expiration, and select the repo scope" /></div>
+          <div class="modal-tip">
+            <strong>Minimum required scope:</strong> The <code>repo</code> scope is needed so the dashboard can read package.json files from private repositories in your org.
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="5">
+          <div class="modal-step-title"><span class="modal-step-badge">6</span>Generate &amp; Copy the Token</div>
+          <div class="modal-step-desc">
+            Scroll to the bottom and click the green <strong>Generate token</strong> button.
+          </div>
+          <div class="modal-step-img"><img src="docs/6.png" alt="Click Generate token" /></div>
+          <div class="modal-tip">
+            <strong>Important:</strong> Copy your token immediately after it's generated &mdash; GitHub will only show it once! Paste it into the <em>GitHub Personal Access Token</em> field on this dashboard.
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <div class="modal-steps-dots" id="patGuideDots"></div>
+        <div class="modal-nav-btns">
+          <button id="patGuidePrev" onclick="patGuideNav(-1)">Prev</button>
+          <button id="patGuideNext" class="btn-next-step" onclick="patGuideNav(1)">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ── PAT Guide Modal ──
+    const PAT_GUIDE_STEPS = 6;
+    let patGuideStep = 0;
+
+    function openPatGuide() {
+      patGuideStep = 0;
+      renderPatGuideStep();
+      document.getElementById('patGuideModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePatGuide() {
+      document.getElementById('patGuideModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closePatGuideOnOverlay(e) {
+      if (e.target === e.currentTarget) closePatGuide();
+    }
+
+    function patGuideNav(dir) {
+      patGuideStep = Math.max(0, Math.min(PAT_GUIDE_STEPS - 1, patGuideStep + dir));
+      renderPatGuideStep();
+    }
+
+    function patGuideGoTo(step) {
+      patGuideStep = step;
+      renderPatGuideStep();
+    }
+
+    function renderPatGuideStep() {
+      const steps = document.querySelectorAll('#patGuideBody .modal-step');
+      steps.forEach((el, i) => el.classList.toggle('active', i === patGuideStep));
+
+      // Dots
+      const dots = document.getElementById('patGuideDots');
+      dots.innerHTML = Array.from({ length: PAT_GUIDE_STEPS }, (_, i) =>
+        `<span class="modal-dot${i === patGuideStep ? ' active' : i < patGuideStep ? ' visited' : ''}" onclick="patGuideGoTo(${i})"></span>`
+      ).join('');
+
+      // Nav buttons
+      document.getElementById('patGuidePrev').disabled = patGuideStep === 0;
+      const nextBtn = document.getElementById('patGuideNext');
+      if (patGuideStep === PAT_GUIDE_STEPS - 1) {
+        nextBtn.textContent = 'Done';
+        nextBtn.onclick = closePatGuide;
+      } else {
+        nextBtn.textContent = 'Next';
+        nextBtn.onclick = () => patGuideNav(1);
+      }
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('patGuideModal').classList.contains('open')) {
+        closePatGuide();
+      }
+    });
+
     // ── State ──
     let allResults = [];
     let filteredResults = [];
