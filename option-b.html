@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vector Web Components Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --green: #22c55e;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface-alt);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%);
+      color: #fff;
+      padding: 32px 40px 28px;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 40px 60px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Config Panel */
+    .config-card {
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+
+    .table-card {
+      overflow: clip;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .form-group input {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.15s ease;
+      background: var(--surface-alt);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      background: #fff;
+    }
+
+    .help-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-primary:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surface-alt);
+    }
+
+    .btn-cancel {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn-cancel:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .status-msg {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .status-msg.error {
+      color: var(--red);
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 16px;
+      display: none;
+      overflow: hidden;
+    }
+
+    .progress-wrap.active {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #8b5cf6);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 0;
+    }
+
+    /* Metric cards */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric-card .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .metric-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 4px;
+      letter-spacing: -0.02em;
+    }
+
+    .metric-card .detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .metric-card.green .value {
+      color: var(--green);
+    }
+
+    .metric-card.amber .value {
+      color: var(--amber);
+    }
+
+    .metric-card.red .value {
+      color: var(--red);
+    }
+
+    /* Charts */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 280px;
+    }
+
+    /* Table */
+    .table-card {
+      margin-bottom: 24px;
+    }
+
+    .table-toolbar {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filter-input {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 240px;
+      background: var(--surface-alt);
+    }
+
+    .filter-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td {
+      padding: 12px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    tr.expanded td {
+      background: #eff6ff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge-green {
+      background: var(--green-bg);
+      color: #15803d;
+      border: 1px solid var(--green-border);
+    }
+
+    .badge-amber {
+      background: var(--amber-bg);
+      color: #92400e;
+      border: 1px solid var(--amber-border);
+    }
+
+    .badge-red {
+      background: var(--red-bg);
+      color: #991b1b;
+      border: 1px solid var(--red-border);
+    }
+
+    .badge-gray {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    .dep-type {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .upgrade-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .upgrade-btn:hover {
+      background: #eff6ff;
+    }
+
+    /* Expandable detail row */
+    .detail-row td {
+      padding: 0;
+      background: #f8fafc;
+    }
+
+    .detail-panel {
+      padding: 20px 24px;
+      border-left: 3px solid var(--primary);
+      margin: 0 20px 12px 20px;
+      background: #fff;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .detail-panel h4 {
+      font-size: 0.85rem;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .version-timeline {
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .version-timeline::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .version-entry {
+      position: relative;
+      margin-bottom: 12px;
+      padding-left: 16px;
+    }
+
+    .version-entry::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+    }
+
+    .version-entry.current::before {
+      background: var(--amber);
+    }
+
+    .version-entry.latest::before {
+      background: var(--green);
+    }
+
+    .version-entry .ver-label {
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .version-entry .ver-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .version-entry .ver-notes {
+      font-size: 0.82rem;
+      color: #475569;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .version-entry .ver-notes ul {
+      margin: 4px 0 0 16px;
+    }
+
+    .no-results {
+      padding: 60px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .no-results .icon {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Repo Picker */
+    .repo-picker {
+      position: relative;
+    }
+
+    .repo-picker-trigger {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px 14px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-alt);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .repo-picker-trigger:hover {
+      border-color: #94a3b8;
+    }
+
+    .repo-picker-trigger.open {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      background: #fff;
+    }
+
+    .repo-picker-trigger .arrow {
+      margin-left: auto;
+      font-size: 0.7rem;
+      transition: transform 0.2s;
+    }
+
+    .repo-picker-trigger.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .repo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      color: var(--primary-dark);
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .repo-chip .chip-x {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #93c5fd;
+      margin-left: 2px;
+    }
+
+    .repo-chip .chip-x:hover {
+      color: var(--red);
+    }
+
+    .repo-picker-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      display: none;
+    }
+
+    .repo-picker-dropdown.open {
+      display: block;
+    }
+
+    .repo-picker-dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .repo-picker-search {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: var(--surface-alt);
+    }
+
+    .repo-picker-search:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .btn-select-all {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-alt);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .btn-select-all:hover {
+      background: #e2e8f0;
+    }
+
+    .repo-picker-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .repo-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.1s;
+    }
+
+    .repo-item:hover {
+      background: var(--surface-alt);
+    }
+
+    .repo-item input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .repo-item label {
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .repo-picker-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .btn-load-repos {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-load-repos:hover {
+      background: #eff6ff;
+      border-color: var(--primary);
+    }
+
+    .btn-load-repos:disabled {
+      color: #93c5fd;
+      cursor: not-allowed;
+    }
+
+    /* Pagination */
+    .pagination-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pagination-info {
+      white-space: nowrap;
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pagination-controls button {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+
+    .pagination-controls button:hover:not(:disabled) {
+      background: var(--surface-alt);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .pagination-controls button.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .pagination-controls button:disabled {
+      color: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .page-size-select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    /* Repo group header in table */
+    .repo-group-header td {
+      background: #f1f5f9;
+      padding: 10px 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .repo-group-header:hover td {
+      background: #f1f5f9;
+    }
+
+    .repo-group-count {
+      font-weight: 400;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    /* Config disabled during scan */
+    .config-card.disabled .card-body {
+      pointer-events: none;
+      opacity: 0.55;
+      user-select: none;
+    }
+
+    .config-card.disabled .actions {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    /* PAT Help Modal */
+    .pat-help-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .pat-help-link:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    .pat-help-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      width: 720px;
+      max-width: 92vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      background: var(--surface-alt);
+      color: var(--text);
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .modal-step {
+      display: none;
+    }
+
+    .modal-step.active {
+      display: block;
+    }
+
+    .modal-step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+
+    .modal-step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .modal-step-img {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface-alt);
+      text-align: center;
+    }
+
+    .modal-step-img img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .modal-steps-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .modal-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .modal-dot.active {
+      background: var(--primary);
+    }
+
+    .modal-dot.visited {
+      background: #93c5fd;
+    }
+
+    .modal-nav-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal-nav-btns button {
+      padding: 7px 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text);
+      transition: all 0.15s;
+    }
+
+    .modal-nav-btns button:hover:not(:disabled) {
+      background: var(--surface-alt);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .modal-nav-btns button:disabled {
+      color: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .modal-nav-btns .btn-next-step {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .modal-nav-btns .btn-next-step:hover {
+      background: var(--primary-dark);
+    }
+
+    .modal-tip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #1e40af;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    /* Property Filters inside repo picker */
+    .repo-picker-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-alt);
+    }
+
+    .repo-picker-filters select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .repo-picker-filters select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .repo-picker-filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .repo-picker-filter-group label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container {
+        padding: 16px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+
+      .modal {
+        width: 95vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>Vector Web Components Dashboard</h1>
+    <p>Scan GitHub repos to audit @vector-web-components usage, versions, and available upgrades</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Config -->
+    <div class="card config-card">
+      <div class="card-header">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path
+            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        Configuration
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>GitHub Organization</label>
+            <div id="orgName"
+              style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">
+              VectorLearning</div>
+          </div>
+          <div class="form-group">
+            <label>GitHub Personal Access Token <a class="pat-help-link" onclick="openPatGuide()"><span
+                  class="pat-help-icon">?</span> How to generate</a></label>
+            <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" />
+            <span class="help-text">Needs repo read access. Used only for in-browser GitHub API calls.</span>
+          </div>
+          <div class="form-group">
+            <label>Repos to Scan</label>
+            <div style="display:flex;gap:8px;align-items:start;">
+              <div class="repo-picker" style="flex:1;" id="repoPicker">
+                <div class="repo-picker-trigger" id="repoPickerTrigger" onclick="toggleRepoPicker()">
+                  <span id="repoPickerPlaceholder">Click "Load Repos" to fetch org repositories</span>
+                  <span class="arrow">&#9660;</span>
+                </div>
+                <div class="repo-picker-dropdown open" id="repoPickerDropdown">
+                  <div class="repo-picker-dropdown-header">
+                    <input class="repo-picker-search" type="text" id="repoSearch" placeholder="Filter repos..."
+                      oninput="filterRepos()" />
+                    <button class="btn-select-all" id="btnSelectAll" onclick="toggleSelectAll()">Select All</button>
+                  </div>
+                  <!-- Property Filters -->
+                  <div class="repo-picker-filters">
+                    <div class="repo-picker-filter-group">
+                      <label>Product</label>
+                      <select id="filterProduct" onchange="applyPropertyFilters()">
+                        <option value="">All Products</option>
+                        <option value="RedVector LMS">RedVector LMS (12)</option>
+                        <option value="SafeLMS">SafeLMS (8)</option>
+                        <option value="Convergence LMS">Convergence LMS (15)</option>
+                        <option value="Target Solutions LMS">Target Solutions LMS (9)</option>
+                        <option value="Casino Essentials LMS">Casino Essentials LMS (3)</option>
+                        <option value="Journey LMS">Journey LMS (4)</option>
+                        <option value="Evaluations+/PD Tracking">Evaluations+/PD Tracking (7)</option>
+                        <option value="Content Studio">Content Studio (5)</option>
+                        <option value="Acadis">Acadis (6)</option>
+                        <option value="LTI">LTI (3)</option>
+                        <option value="Shared Services - UX">Shared Services - UX (11)</option>
+                        <option value="Shared Services - API">Shared Services - API (8)</option>
+                        <option value="IaC">IaC (14)</option>
+                        <option value="CI/CD Automation">CI/CD Automation (6)</option>
+                        <option value="Tooling">Tooling (4)</option>
+                        <option value="Archive - No Longer Used">Archive (18)</option>
+                      </select>
+                    </div>
+                    <div class="repo-picker-filter-group">
+                      <label>Repo Class</label>
+                      <select id="filterRepoClass" onchange="applyPropertyFilters()">
+                        <option value="">All Classes</option>
+                        <option value="Product Source Code">Source Code (142)</option>
+                        <option value="Supporting Code - IaC">IaC (28)</option>
+                        <option value="Supporting Code - CI/CD">CI/CD (19)</option>
+                        <option value="Supporting Code - QA">QA (11)</option>
+                        <option value="Supporting Code - Tooling">Tooling (8)</option>
+                        <option value="Documentation">Docs (6)</option>
+                        <option value="Supporting - Other">Other (5)</option>
+                      </select>
+                    </div>
+                    <div class="repo-picker-filter-group">
+                      <label>Monorepo</label>
+                      <select id="filterMonorepo" onchange="applyPropertyFilters()">
+                        <option value="">All</option>
+                        <option value="true">Yes (34)</option>
+                        <option value="false">No (189)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="repo-picker-list" id="repoPickerList">
+                    <div class="repo-picker-empty">No repos loaded yet.</div>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-load-repos" id="loadReposBtn" onclick="loadOrgRepos()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Load Repos
+              </button>
+            </div>
+            <span class="help-text">Load repos from the org, then select which to scan.</span>
+          </div>
+          <div class="form-group">
+            <label>Component Library Repo</label>
+            <div id="libRepo"
+              style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">
+              VectorLearning/vector-web-components</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="scanBtn" onclick="startScan()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Scan Repos
+          </button>
+          <button class="btn btn-cancel hidden" id="cancelBtn" onclick="cancelScan()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancel
+          </button>
+          <button class="btn btn-ghost" onclick="clearResults()">Clear</button>
+          <span class="status-msg" id="statusText"></span>
+        </div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results (hidden until scan) -->
+    <div id="resultsSection" class="hidden">
+
+      <!-- Metrics -->
+      <div class="metrics" id="metricsRow">
+        <div class="metric-card" id="metricRepos">
+          <div class="label">Repos Scanned</div>
+          <div class="value">0</div>
+        </div>
+        <div class="metric-card" id="metricComponents">
+          <div class="label">Unique Components</div>
+          <div class="value">0</div>
+        </div>
+        <div class="metric-card green" id="metricUpToDate">
+          <div class="label">Up to Date</div>
+          <div class="value">0</div>
+          <div class="detail">on latest version</div>
+        </div>
+        <div class="metric-card amber" id="metricOutdated">
+          <div class="label">Upgrades Available</div>
+          <div class="value">0</div>
+          <div class="detail">behind latest version</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header">Components per Repository</div>
+          <div class="card-body">
+            <div class="chart-container"><canvas id="chartByRepo"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Version Freshness</div>
+          <div class="card-body">
+            <div class="chart-container"><canvas id="chartFreshness"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card table-card">
+        <div class="card-header">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Detailed Component Usage
+        </div>
+        <div class="table-toolbar">
+          <input class="filter-input" type="text" id="tableFilter" placeholder="Filter by repo or component..."
+            oninput="filterTable()" />
+        </div>
+        <div style="overflow-x:clip;">
+          <table>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>PACKAGE NAME</th>
+                <th>Installed</th>
+                <th>Latest</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination-toolbar hidden" id="paginationToolbar">
+          <div class="pagination-info" id="paginationInfo"></div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div>
+              <label style="font-size:0.82rem;color:var(--text-muted);margin-right:4px;">Rows:</label>
+              <select class="page-size-select" id="pageSizeSelect" onchange="changePageSize(this.value)">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+            <div class="pagination-controls" id="paginationControls"></div>
+          </div>
+        </div>
+        <div class="no-results hidden" id="noResults">
+          <div class="icon">&#128269;</div>
+          No @vector-web-components found in the scanned repos.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PAT Help Modal -->
+  <div class="modal-overlay" id="patGuideModal" onclick="closePatGuideOnOverlay(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>How to Generate a GitHub Personal Access Token</h2>
+        <button class="modal-close" onclick="closePatGuide()">&times;</button>
+      </div>
+      <div class="modal-body" id="patGuideBody">
+
+        <div class="modal-step active" data-step="0">
+          <div class="modal-step-title"><span class="modal-step-badge">1</span>Open GitHub Settings</div>
+          <div class="modal-step-desc">
+            Go to <strong>github.com</strong> and click your <strong>profile picture</strong> in the top-right corner.
+            From the dropdown menu, click <strong>Settings</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/1.png" alt="Click profile icon then Settings" /></div>
+        </div>
+
+        <div class="modal-step" data-step="1">
+          <div class="modal-step-title"><span class="modal-step-badge">2</span>Go to Developer Settings</div>
+          <div class="modal-step-desc">
+            In the left sidebar, scroll all the way down to the bottom and click <strong>Developer settings</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/2.png"
+              alt="Click Developer settings at the bottom of the sidebar" /></div>
+        </div>
+
+        <div class="modal-step" data-step="2">
+          <div class="modal-step-title"><span class="modal-step-badge">3</span>Select Tokens (classic)</div>
+          <div class="modal-step-desc">
+            Expand <strong>Personal access tokens</strong> and click <strong>Tokens (classic)</strong>. This dashboard
+            uses classic tokens for GitHub API access.
+          </div>
+          <div class="modal-step-img"><img src="docs/3.png" alt="Click Personal access tokens then Tokens (classic)" />
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="3">
+          <div class="modal-step-title"><span class="modal-step-badge">4</span>Generate New Token (classic)</div>
+          <div class="modal-step-desc">
+            Click the <strong>Generate new token</strong> dropdown and select <strong>Generate new token
+              (classic)</strong>.
+          </div>
+          <div class="modal-step-img"><img src="docs/4.png" alt="Click Generate new token (classic)" /></div>
+        </div>
+
+        <div class="modal-step" data-step="4">
+          <div class="modal-step-title"><span class="modal-step-badge">5</span>Configure the Token</div>
+          <div class="modal-step-desc">
+            Fill in the token details:
+          </div>
+          <ul style="font-size:0.85rem;color:var(--text-muted);margin:0 0 16px 20px;line-height:1.8;">
+            <li><strong>Note</strong> &mdash; Give it a descriptive name (e.g. "vector-dashboard")</li>
+            <li><strong>Expiration</strong> &mdash; Choose an expiration period (30 days recommended)</li>
+            <li><strong>Scopes</strong> &mdash; Check the <strong>repo</strong> checkbox (full control of private
+              repositories)</li>
+          </ul>
+          <div class="modal-step-img"><img src="docs/5.png"
+              alt="Name the token, set expiration, and select the repo scope" /></div>
+          <div class="modal-tip">
+            <strong>Minimum required scope:</strong> The <code>repo</code> scope is needed so the dashboard can read
+            package.json files from private repositories in your org.
+          </div>
+        </div>
+
+        <div class="modal-step" data-step="5">
+          <div class="modal-step-title"><span class="modal-step-badge">6</span>Generate &amp; Copy the Token</div>
+          <div class="modal-step-desc">
+            Scroll to the bottom and click the green <strong>Generate token</strong> button.
+          </div>
+          <div class="modal-step-img"><img src="docs/6.png" alt="Click Generate token" /></div>
+          <div class="modal-tip">
+            <strong>Important:</strong> Copy your token immediately after it's generated &mdash; GitHub will only show
+            it once! Paste it into the <em>GitHub Personal Access Token</em> field on this dashboard.
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <div class="modal-steps-dots" id="patGuideDots"></div>
+        <div class="modal-nav-btns">
+          <button id="patGuidePrev" onclick="patGuideNav(-1)">Prev</button>
+          <button id="patGuideNext" class="btn-next-step" onclick="patGuideNav(1)">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── PAT Guide Modal ──
+    const PAT_GUIDE_STEPS = 6;
+    let patGuideStep = 0;
+
+    function openPatGuide() {
+      patGuideStep = 0;
+      renderPatGuideStep();
+      document.getElementById('patGuideModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePatGuide() {
+      document.getElementById('patGuideModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function closePatGuideOnOverlay(e) {
+      if (e.target === e.currentTarget) closePatGuide();
+    }
+
+    function patGuideNav(dir) {
+      patGuideStep = Math.max(0, Math.min(PAT_GUIDE_STEPS - 1, patGuideStep + dir));
+      renderPatGuideStep();
+    }
+
+    function patGuideGoTo(step) {
+      patGuideStep = step;
+      renderPatGuideStep();
+    }
+
+    function renderPatGuideStep() {
+      const steps = document.querySelectorAll('#patGuideBody .modal-step');
+      steps.forEach((el, i) => el.classList.toggle('active', i === patGuideStep));
+
+      // Dots
+      const dots = document.getElementById('patGuideDots');
+      dots.innerHTML = Array.from({ length: PAT_GUIDE_STEPS }, (_, i) =>
+        `<span class="modal-dot${i === patGuideStep ? ' active' : i < patGuideStep ? ' visited' : ''}" onclick="patGuideGoTo(${i})"></span>`
+      ).join('');
+
+      // Nav buttons
+      document.getElementById('patGuidePrev').disabled = patGuideStep === 0;
+      const nextBtn = document.getElementById('patGuideNext');
+      if (patGuideStep === PAT_GUIDE_STEPS - 1) {
+        nextBtn.textContent = 'Done';
+        nextBtn.onclick = closePatGuide;
+      } else {
+        nextBtn.textContent = 'Next';
+        nextBtn.onclick = () => patGuideNav(1);
+      }
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && document.getElementById('patGuideModal').classList.contains('open')) {
+        closePatGuide();
+      }
+    });
+
+    // ── Console error suppression during scans ──
+    const _origConsoleError = console.error;
+    const _origConsoleWarn = console.warn;
+    function suppressConsoleErrors() {
+      console.error = () => { };
+      console.warn = () => { };
+    }
+    function restoreConsoleErrors() {
+      console.error = _origConsoleError;
+      console.warn = _origConsoleWarn;
+    }
+
+    // ── State ──
+    let allResults = [];
+    let filteredResults = [];
+    let chartByRepo = null;
+    let chartFreshness = null;
+    const npmCache = {};
+
+    // Repo picker state
+    let orgRepos = [];        // all fetched repo names
+    let selectedRepos = new Set(); // currently selected repo names
+    let reposLoaded = false;
+
+    // Pagination state
+    let currentPage = 1;
+    let pageSize = 25;
+
+    // Scan abort controller
+    let scanAbort = null;
+
+    // Default repos to pre-select after loading
+    const DEFAULT_REPOS = ['ts-react', 'eval-pd-spa', 'lti-react'];
+
+    // ── Helpers ──
+    function setStatus(msg, isError) {
+      const el = document.getElementById('statusText');
+      el.textContent = msg;
+      el.className = 'status-msg' + (isError ? ' error' : '');
+    }
+
+    function setProgress(pct) {
+      const wrap = document.getElementById('progressWrap');
+      const bar = document.getElementById('progressBar');
+      wrap.classList.toggle('active', pct < 100);
+      bar.style.width = pct + '%';
+    }
+
+    function setLoading(on) {
+      const btn = document.getElementById('scanBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+      btn.disabled = on;
+      btn.innerHTML = on
+        ? '<span class="spinner"></span> Scanning...'
+        : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Scan Repos';
+
+      // Show/hide cancel button
+      cancelBtn.classList.toggle('hidden', !on);
+
+      // Disable/enable the entire config card during scan
+      const configCard = document.querySelector('.config-card');
+      configCard.classList.toggle('disabled', on);
+
+      // Close the repo picker dropdown if open
+      if (on) {
+        document.getElementById('repoPickerDropdown').classList.remove('open');
+        document.getElementById('repoPickerTrigger').classList.remove('open');
+      }
+    }
+
+    function cancelScan() {
+      if (scanAbort) {
+        scanAbort.abort();
+      }
+    }
+
+    // ── Property Filters (stub) ──
+    function applyPropertyFilters() {
+      // Stub for mockup — does nothing yet
+    }
+
+    // ── Repo Picker ──
+    async function loadOrgRepos() {
+      const org = document.getElementById('orgName').textContent.trim();
+      const token = document.getElementById('ghToken').value.trim();
+      if (!token) { setStatus('Please enter a GitHub token first.', true); return; }
+
+      const btn = document.getElementById('loadReposBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="border-color:rgba(59,130,246,0.3);border-top-color:var(--primary);width:14px;height:14px;"></span> Loading...';
+
+      try {
+        orgRepos = [];
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
+          if (!data || data.length === 0) break;
+          orgRepos.push(...data.map(r => r.name));
+          if (data.length < 100) break;
+          page++;
+        }
+        orgRepos.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        // Pre-select defaults
+        selectedRepos.clear();
+        for (const d of DEFAULT_REPOS) {
+          if (orgRepos.includes(d)) selectedRepos.add(d);
+        }
+
+        reposLoaded = true;
+        renderRepoPickerList();
+        updateRepoPickerTrigger();
+        setStatus(`Loaded ${orgRepos.length} repos from ${org}.`);
+      } catch (err) {
+        setStatus('Failed to load repos: ' + err.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Load Repos';
+      }
+    }
+
+    function renderRepoPickerList(filter) {
+      const list = document.getElementById('repoPickerList');
+      const filtered = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter.toLowerCase()))
+        : orgRepos;
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="repo-picker-empty">No repos match your filter.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(name => `
+        <div class="repo-item" onclick="toggleRepoSelection('${name}')">
+          <input type="checkbox" ${selectedRepos.has(name) ? 'checked' : ''} tabindex="-1" />
+          <label>${name}</label>
+        </div>
+      `).join('');
+    }
+
+    function toggleRepoPicker() {
+      if (!reposLoaded) return;
+      const trigger = document.getElementById('repoPickerTrigger');
+      const dropdown = document.getElementById('repoPickerDropdown');
+      const isOpen = dropdown.classList.contains('open');
+
+      if (isOpen) {
+        dropdown.classList.remove('open');
+        trigger.classList.remove('open');
+      } else {
+        dropdown.classList.add('open');
+        trigger.classList.add('open');
+        document.getElementById('repoSearch').value = '';
+        renderRepoPickerList();
+        document.getElementById('repoSearch').focus();
+      }
+    }
+
+    function toggleRepoSelection(name) {
+      if (selectedRepos.has(name)) {
+        selectedRepos.delete(name);
+      } else {
+        selectedRepos.add(name);
+      }
+      const filter = document.getElementById('repoSearch').value;
+      renderRepoPickerList(filter);
+      updateRepoPickerTrigger();
+    }
+
+    function removeRepoChip(name, event) {
+      event.stopPropagation();
+      selectedRepos.delete(name);
+      renderRepoPickerList(document.getElementById('repoSearch').value);
+      updateRepoPickerTrigger();
+    }
+
+    function toggleSelectAll() {
+      const filter = document.getElementById('repoSearch').value.toLowerCase();
+      const visible = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter))
+        : orgRepos;
+
+      const allSelected = visible.every(r => selectedRepos.has(r));
+      if (allSelected) {
+        for (const r of visible) selectedRepos.delete(r);
+      } else {
+        for (const r of visible) selectedRepos.add(r);
+      }
+
+      renderRepoPickerList(filter);
+      updateRepoPickerTrigger();
+      updateSelectAllButton();
+    }
+
+    function updateSelectAllButton() {
+      const filter = document.getElementById('repoSearch').value.toLowerCase();
+      const visible = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter))
+        : orgRepos;
+      const allSelected = visible.length > 0 && visible.every(r => selectedRepos.has(r));
+      document.getElementById('btnSelectAll').textContent = allSelected ? 'Deselect All' : 'Select All';
+    }
+
+    function filterRepos() {
+      const filter = document.getElementById('repoSearch').value;
+      renderRepoPickerList(filter);
+      updateSelectAllButton();
+    }
+
+    function updateRepoPickerTrigger() {
+      const trigger = document.getElementById('repoPickerTrigger');
+      const placeholder = document.getElementById('repoPickerPlaceholder');
+      const count = selectedRepos.size;
+
+      // Remove existing chips
+      trigger.querySelectorAll('.repo-chip').forEach(el => el.remove());
+
+      if (count === 0) {
+        placeholder.textContent = reposLoaded ? 'No repos selected — click to select' : 'Click "Load Repos" to fetch org repositories';
+        placeholder.style.display = '';
+      } else if (count <= 5) {
+        placeholder.style.display = 'none';
+        const arrow = trigger.querySelector('.arrow');
+        const sorted = [...selectedRepos].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        for (const name of sorted) {
+          const chip = document.createElement('span');
+          chip.className = 'repo-chip';
+          chip.innerHTML = `${name}<span class="chip-x" onclick="removeRepoChip('${name}', event)">&times;</span>`;
+          trigger.insertBefore(chip, arrow);
+        }
+      } else {
+        placeholder.textContent = `${count} repos selected`;
+        placeholder.style.display = '';
+      }
+    }
+
+    function getSelectedRepos() {
+      return [...selectedRepos];
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function (e) {
+      const picker = document.getElementById('repoPicker');
+      if (picker && !picker.contains(e.target)) {
+        document.getElementById('repoPickerDropdown').classList.remove('open');
+        document.getElementById('repoPickerTrigger').classList.remove('open');
+      }
+    });
+
+    function parseSemver(v) {
+      const clean = v.replace(/^[^\d]*/, '');
+      const parts = clean.split('.').map(p => parseInt(p, 10) || 0);
+      return { major: parts[0] || 0, minor: parts[1] || 0, patch: parts[2] || 0 };
+    }
+
+    function compareSemver(a, b) {
+      const va = parseSemver(a);
+      const vb = parseSemver(b);
+      if (va.major !== vb.major) return va.major - vb.major;
+      if (va.minor !== vb.minor) return va.minor - vb.minor;
+      return va.patch - vb.patch;
+    }
+
+    function semverDiffType(current, latest) {
+      const vc = parseSemver(current);
+      const vl = parseSemver(latest);
+      if (vl.major > vc.major) return 'major';
+      if (vl.minor > vc.minor) return 'minor';
+      if (vl.patch > vc.patch) return 'patch';
+      return 'current';
+    }
+
+    // ── GitHub API ──
+    async function ghFetch(url, token, signal) {
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (token) headers['Authorization'] = 'token ' + token;
+      const opts = { headers };
+      if (signal) opts.signal = signal;
+      const resp = await fetch(url, opts);
+      if (!resp.ok) {
+        if (resp.status === 404) return null;
+        throw new Error(`GitHub API ${resp.status}: ${resp.statusText}`);
+      }
+      return resp.json();
+    }
+
+    async function fetchFileContent(fullRepoPath, filePath, token, signal) {
+      const url = `https://api.github.com/repos/${fullRepoPath}/contents/${filePath}`;
+      const data = await ghFetch(url, token, signal);
+      if (!data || !data.content) return null;
+      try { return JSON.parse(atob(data.content)); }
+      catch { return null; }
+    }
+
+    function extractVectorComponents(pkgJson, depType) {
+      const deps = pkgJson[depType];
+      if (!deps) return [];
+      return Object.entries(deps)
+        .filter(([name]) => name.startsWith('@vector-web-components/'))
+        .map(([name, version]) => ({ name, version, depType }));
+    }
+
+    async function scanRepo(org, repo, token, signal) {
+      const results = [];
+
+      const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token, signal);
+      if (rootPkg) {
+        for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+          for (const c of extractVectorComponents(rootPkg, dt)) {
+            results.push({ repo, file: 'package.json', ...c });
+          }
+        }
+      }
+
+      for (const subdir of ['packages', 'apps', 'libs']) {
+        try {
+          const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token, signal);
+          if (dirData && Array.isArray(dirData)) {
+            for (const item of dirData) {
+              if (item.type === 'dir') {
+                const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token, signal);
+                if (subPkg) {
+                  for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+                    for (const c of extractVectorComponents(subPkg, dt)) {
+                      results.push({ repo, file: `${subdir}/${item.name}/package.json`, ...c });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) { if (e.name === 'AbortError') throw e; /* subdir not found */ }
+      }
+
+      return results;
+    }
+
+    // ── Resolve latest versions from the Component Library GitHub Repo ──
+    // Strategy:
+    //   1. Fetch GitHub tags from the lib repo (they follow patterns like v1.2.3, component-name@1.2.3, etc.)
+    //   2. Scan the lib repo for packages/*/package.json to read each component's version directly
+    //   3. Fetch GitHub releases for changelogs
+    //   4. Fall back to npm registry if lib repo is not provided
+
+    async function resolveFromGitHubRepo(libRepoPath, token, signal) {
+      // Returns { latestVersions: { '@vector-web-components/foo': '1.2.3', ... }, releases: [...] }
+      const result = { latestVersions: {}, releases: [], allTags: [] };
+
+      // 1. Fetch releases for changelogs
+      try {
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/releases?per_page=100&page=${page}`, token, signal);
+          if (!data || data.length === 0) break;
+          result.releases.push(...data);
+          if (data.length < 100) break;
+          page++;
+        }
+      } catch (e) { if (e.name === 'AbortError') throw e; /* no releases */ }
+
+      // 2. Fetch tags to extract version numbers
+      try {
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/tags?per_page=100&page=${page}`, token, signal);
+          if (!data || data.length === 0) break;
+          result.allTags.push(...data.map(t => t.name));
+          if (data.length < 100) break;
+          page++;
+        }
+      } catch (e) { if (e.name === 'AbortError') throw e; /* no tags */ }
+
+      // 3. Try to find component packages in the repo by scanning common monorepo dirs
+      for (const dir of ['packages', 'components', 'libs', 'modules', '']) {
+        try {
+          const basePath = dir || '.';
+          const dirData = await ghFetch(`https://api.github.com/repos/${libRepoPath}/contents/${dir}`, token, signal);
+          if (!dirData || !Array.isArray(dirData)) continue;
+
+          for (const item of dirData) {
+            if (item.type !== 'dir') continue;
+            const pkg = await fetchFileContent(libRepoPath, `${dir ? dir + '/' : ''}${item.name}/package.json`, token, signal);
+            if (pkg && pkg.name && pkg.name.startsWith('@vector-web-components/')) {
+              result.latestVersions[pkg.name] = pkg.version;
+            }
+          }
+
+          // If we found components, stop scanning other dirs
+          if (Object.keys(result.latestVersions).length > 0) break;
+        } catch (e) { if (e.name === 'AbortError') throw e; /* dir not found */ }
+      }
+
+      // 4. If no packages found via directory scan, try to parse tags
+      //    Tags may follow: @vector-web-components/button@1.2.3 or v1.2.3 (single-package repo)
+      if (Object.keys(result.latestVersions).length === 0 && result.allTags.length > 0) {
+        const tagVersions = {}; // { packageName: [versions...] }
+
+        for (const tag of result.allTags) {
+          // Pattern: @vector-web-components/name@version
+          const scopedMatch = tag.match(/@vector-web-components\/([^@]+)@(.+)/);
+          if (scopedMatch) {
+            const name = `@vector-web-components/${scopedMatch[1]}`;
+            if (!tagVersions[name]) tagVersions[name] = [];
+            tagVersions[name].push(scopedMatch[2]);
+            continue;
+          }
+          // Pattern: name@version (without scope)
+          const namedMatch = tag.match(/^([a-z][a-z0-9-]*)@(\d+\.\d+\.\d+.*)$/);
+          if (namedMatch) {
+            const name = `@vector-web-components/${namedMatch[1]}`;
+            if (!tagVersions[name]) tagVersions[name] = [];
+            tagVersions[name].push(namedMatch[2]);
+            continue;
+          }
+          // Pattern: v1.2.3 (single-package repo — collect under a generic key)
+          const simpleMatch = tag.match(/^v?(\d+\.\d+\.\d+.*)$/);
+          if (simpleMatch) {
+            if (!tagVersions['__root__']) tagVersions['__root__'] = [];
+            tagVersions['__root__'].push(simpleMatch[1]);
+          }
+        }
+
+        for (const [name, versions] of Object.entries(tagVersions)) {
+          versions.sort(compareSemver);
+          if (name === '__root__') continue; // We'll handle root separately
+          result.latestVersions[name] = versions[versions.length - 1];
+        }
+
+        // If only root tags found, check the repo's own package.json
+        if (Object.keys(result.latestVersions).length === 0 && tagVersions['__root__']) {
+          const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token, signal);
+          if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
+            tagVersions['__root__'].sort(compareSemver);
+            result.latestVersions[rootPkg.name] = tagVersions['__root__'][tagVersions['__root__'].length - 1];
+          }
+        }
+      }
+
+      // 5. Last resort: check root package.json of lib repo
+      if (Object.keys(result.latestVersions).length === 0) {
+        const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token, signal);
+        if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
+          result.latestVersions[rootPkg.name] = rootPkg.version;
+        }
+      }
+
+      return result;
+    }
+
+    // Build a tag-based version timeline from all tags for a given component
+    function buildTagTimeline(componentName, allTags, releases) {
+      const versions = [];
+      const shortName = componentName.replace('@vector-web-components/', '');
+
+      for (const tag of allTags) {
+        let ver = null;
+        // @vector-web-components/name@version
+        const scopedMatch = tag.match(new RegExp(`@vector-web-components/${shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}@(.+)`));
+        if (scopedMatch) { ver = scopedMatch[1]; }
+        // name@version
+        if (!ver) {
+          const namedMatch = tag.match(new RegExp(`^${shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}@(\\d+\\.\\d+\\.\\d+.*)$`));
+          if (namedMatch) ver = namedMatch[1];
+        }
+        // v1.2.3 (generic)
+        if (!ver) {
+          const simpleMatch = tag.match(/^v?(\d+\.\d+\.\d+.*)$/);
+          if (simpleMatch) ver = simpleMatch[1];
+        }
+        if (ver) {
+          // Find matching release for date/notes
+          const rel = releases.find(r => r.tag_name === tag);
+          versions.push({
+            version: ver,
+            date: rel ? rel.published_at || rel.created_at : null,
+            body: rel ? rel.body : null,
+            tag: tag
+          });
+        }
+      }
+
+      versions.sort((a, b) => compareSemver(a.version, b.version));
+      return versions;
+    }
+
+    // ── npm Registry (fallback) ──
+    async function fetchNpmLatest(packageName, signal) {
+      if (npmCache[packageName] !== undefined) return npmCache[packageName];
+
+      try {
+        const url = `https://registry.npmjs.org/${packageName.replace('/', '%2F')}`;
+        const opts = signal ? { signal } : {};
+        const resp = await fetch(url, opts);
+        if (!resp.ok) { npmCache[packageName] = null; return null; }
+        const data = await resp.json();
+        const latest = data['dist-tags'] && data['dist-tags'].latest;
+        const versions = [];
+        if (data.time) {
+          for (const [ver, dateStr] of Object.entries(data.time)) {
+            if (ver === 'created' || ver === 'modified') continue;
+            versions.push({ version: ver, date: dateStr });
+          }
+          versions.sort((a, b) => compareSemver(a.version, b.version));
+        }
+        const result = latest ? { latest, versions } : null;
+        npmCache[packageName] = result;
+        return result;
+      } catch {
+        npmCache[packageName] = null;
+        return null;
+      }
+    }
+
+    // ── Main Scan ──
+    async function startScan() {
+      const org = document.getElementById('orgName').textContent.trim();
+      const token = document.getElementById('ghToken').value.trim();
+      const libRepo = document.getElementById('libRepo').textContent.trim();
+
+      if (!org) { setStatus('Please enter an organization name.', true); return; }
+      if (!token) { setStatus('Please enter a GitHub token.', true); return; }
+
+      const repos = getSelectedRepos();
+      if (repos.length === 0) {
+        setStatus('Please select at least one repo to scan. Use "Load Repos" first.', true);
+        return;
+      }
+
+      scanAbort = new AbortController();
+      const signal = scanAbort.signal;
+
+      setLoading(true);
+      suppressConsoleErrors();
+      setStatus('');
+      setProgress(0);
+      document.getElementById('resultsSection').classList.add('hidden');
+
+      try {
+
+        // ── Phase 0: Pre-filter repos using GitHub Code Search ──
+        setStatus(`Pre-filtering ${repos.length} repos for @vector-web-components usage...`);
+        setProgress(2);
+        let reposToScan = repos;
+        try {
+          const codeSearchHits = new Set();
+          let page = 1;
+          while (true) {
+            const data = await ghFetch(
+              `https://api.github.com/search/code?q=%22%40vector-web-components%22+filename%3Apackage.json+org%3A${encodeURIComponent(org)}&per_page=100&page=${page}`,
+              token, signal
+            );
+            if (!data || !data.items || data.items.length === 0) break;
+            for (const item of data.items) {
+              if (item.repository && item.repository.name) {
+                codeSearchHits.add(item.repository.name);
+              }
+            }
+            if (data.items.length < 100) break;
+            page++;
+          }
+          // Keep only selected repos that have hits
+          if (codeSearchHits.size > 0) {
+            reposToScan = repos.filter(r => codeSearchHits.has(r));
+            setStatus(`Found ${reposToScan.length} of ${repos.length} selected repos with @vector-web-components usage.`);
+          }
+          // If code search returned nothing (e.g. API issue), fall back to scanning all selected
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          // Code search failed (rate limit, permissions, etc.) — fall back to full scan
+          setStatus(`Code search unavailable, scanning all ${repos.length} selected repos...`);
+        }
+        setProgress(10);
+
+        // ── Phase 1: Scan consumer repos for component usage (concurrent) ──
+        allResults = [];
+        const errors = [];
+        const CONCURRENCY = 5;
+
+        for (let i = 0; i < reposToScan.length; i += CONCURRENCY) {
+          if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
+
+          const batch = reposToScan.slice(i, i + CONCURRENCY);
+          setStatus(`Scanning repos ${i + 1}–${Math.min(i + CONCURRENCY, reposToScan.length)} of ${reposToScan.length}...`);
+          setProgress(10 + ((i + 1) / reposToScan.length) * 30);
+
+          const batchResults = await Promise.allSettled(
+            batch.map(repo => scanRepo(org, repo, token, signal))
+          );
+
+          for (let j = 0; j < batchResults.length; j++) {
+            if (batchResults[j].status === 'fulfilled') {
+              allResults.push(...batchResults[j].value);
+            } else {
+              const reason = batchResults[j].reason;
+              if (reason && reason.name === 'AbortError') throw reason;
+              errors.push(`${batch[j]}: ${reason?.message || 'Unknown error'}`);
+            }
+          }
+        }
+
+        // ── Phase 2: Resolve latest versions ──
+        const uniquePackages = [...new Set(allResults.map(r => r.name))];
+        let libData = null;
+
+        // Strategy A: Use the component library GitHub repo (preferred)
+        if (libRepo) {
+          setStatus('Scanning component library repo for latest versions...');
+          setProgress(50);
+          try {
+            libData = await resolveFromGitHubRepo(libRepo, token, signal);
+          } catch (err) {
+            if (err.name === 'AbortError') throw err;
+            errors.push(`Library repo (${libRepo}): ${err.message}`);
+          }
+        }
+
+        // Apply version info to each result
+        for (let i = 0; i < uniquePackages.length; i++) {
+          if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
+
+          const pkg = uniquePackages[i];
+          setStatus(`Resolving versions: ${pkg.replace('@vector-web-components/', '')} (${i + 1}/${uniquePackages.length})...`);
+          setProgress(55 + ((i + 1) / uniquePackages.length) * 40);
+
+          let latestVersion = null;
+          let versionTimeline = [];
+          let releases = [];
+
+          // Try GitHub lib repo first
+          if (libData && libData.latestVersions[pkg]) {
+            latestVersion = libData.latestVersions[pkg];
+            releases = libData.releases;
+            versionTimeline = buildTagTimeline(pkg, libData.allTags, libData.releases);
+          }
+
+          // Fallback: try npm registry
+          if (!latestVersion) {
+            const npmInfo = await fetchNpmLatest(pkg, signal);
+            if (npmInfo) {
+              latestVersion = npmInfo.latest;
+              versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
+            }
+          }
+
+          // Apply to all results matching this package
+          for (const r of allResults.filter(r => r.name === pkg)) {
+            r.latestVersion = latestVersion;
+            r.allVersions = versionTimeline;
+            r.releases = releases;
+            r.diffType = latestVersion ? semverDiffType(r.version, latestVersion) : 'unknown';
+          }
+        }
+
+        setProgress(100);
+        const skipped = repos.length - reposToScan.length;
+        const skippedMsg = skipped > 0 ? ` (${skipped} repos skipped — no component usage found)` : '';
+        renderDashboard(allResults, reposToScan.length, errors);
+        setStatus(errors.length ? `Done with ${errors.length} error(s).${skippedMsg}` : `Scan complete.${skippedMsg}`);
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          setStatus('Scan cancelled.');
+          setProgress(100);
+        } else {
+          setStatus('Error: ' + err.message, true);
+        }
+      } finally {
+        restoreConsoleErrors();
+        scanAbort = null;
+        setLoading(false);
+      }
+    }
+
+    // ── Rendering ──
+    function renderDashboard(results, repoCount, errors) {
+      document.getElementById('resultsSection').classList.remove('hidden');
+
+      const uniqueComponents = new Set(results.map(r => r.name));
+      const upToDate = results.filter(r => r.diffType === 'current').length;
+      const outdated = results.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').length;
+      const unknown = results.filter(r => r.diffType === 'unknown').length;
+
+      // Metrics
+      document.querySelector('#metricRepos .value').textContent = repoCount;
+      document.querySelector('#metricComponents .value').textContent = uniqueComponents.size;
+      document.querySelector('#metricUpToDate .value').textContent = upToDate;
+      document.querySelector('#metricOutdated .value').textContent = outdated;
+      if (unknown > 0) {
+        document.querySelector('#metricOutdated .detail').textContent = `behind latest (${unknown} unknown)`;
+      } else {
+        document.querySelector('#metricOutdated .detail').textContent = 'behind latest version';
+      }
+
+      renderCharts(results);
+      currentPage = 1;
+      document.getElementById('tableFilter').value = '';
+      renderTable(results);
+    }
+
+    const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#f97316'];
+
+    function renderCharts(results) {
+      if (chartByRepo) chartByRepo.destroy();
+      if (chartFreshness) chartFreshness.destroy();
+
+      // Chart 1: Components per repo (doughnut)
+      const repoMap = {};
+      for (const r of results) { repoMap[r.repo] = (repoMap[r.repo] || 0) + 1; }
+      const repoLabels = Object.keys(repoMap);
+      const repoCounts = Object.values(repoMap);
+
+      chartByRepo = new Chart(document.getElementById('chartByRepo'), {
+        type: 'doughnut',
+        data: {
+          labels: repoLabels,
+          datasets: [{
+            data: repoCounts,
+            backgroundColor: CHART_COLORS.slice(0, repoLabels.length),
+            borderWidth: 2, borderColor: '#fff', hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '55%',
+          plugins: {
+            legend: { position: 'right', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                  return `${ctx.label}: ${ctx.raw} components (${((ctx.raw / total) * 100).toFixed(0)}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Chart 2: Version freshness (horizontal stacked bar)
+      const componentMap = {};
+      for (const r of results) {
+        const short = r.name.replace('@vector-web-components/', '');
+        if (!componentMap[short]) componentMap[short] = { current: 0, minor: 0, major: 0, patch: 0, unknown: 0 };
+        componentMap[short][r.diffType] = (componentMap[short][r.diffType] || 0) + 1;
+      }
+      const compLabels = Object.keys(componentMap);
+
+      chartFreshness = new Chart(document.getElementById('chartFreshness'), {
+        type: 'bar',
+        data: {
+          labels: compLabels,
+          datasets: [
+            { label: 'Up to date', data: compLabels.map(c => componentMap[c].current), backgroundColor: '#22c55e' },
+            { label: 'Patch behind', data: compLabels.map(c => componentMap[c].patch), backgroundColor: '#3b82f6' },
+            { label: 'Minor behind', data: compLabels.map(c => componentMap[c].minor), backgroundColor: '#f59e0b' },
+            { label: 'Major behind', data: compLabels.map(c => componentMap[c].major), backgroundColor: '#ef4444' },
+            { label: 'Unknown', data: compLabels.map(c => componentMap[c].unknown), backgroundColor: '#cbd5e1' },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          scales: {
+            x: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+            y: { stacked: true, grid: { display: false } }
+          },
+          plugins: { legend: { position: 'top', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+        }
+      });
+    }
+
+    function statusBadge(r) {
+      if (r.diffType === 'current') return '<span class="badge badge-green">&#10003; Up to date</span>';
+      if (r.diffType === 'patch') return '<span class="badge badge-green">Patch available</span>';
+      if (r.diffType === 'minor') return '<span class="badge badge-amber">Minor update</span>';
+      if (r.diffType === 'major') return '<span class="badge badge-red">Major update</span>';
+      return '<span class="badge badge-gray">Unknown</span>';
+    }
+
+    function renderTable(results) {
+      const body = document.getElementById('resultsBody');
+      const noResults = document.getElementById('noResults');
+      const paginationToolbar = document.getElementById('paginationToolbar');
+      body.innerHTML = '';
+
+      if (results.length === 0) {
+        noResults.classList.remove('hidden');
+        paginationToolbar.classList.add('hidden');
+        return;
+      }
+      noResults.classList.add('hidden');
+
+      // Sort: group by repo first, then by severity within each repo
+      results.sort((a, b) => {
+        const repoCompare = a.repo.localeCompare(b.repo);
+        if (repoCompare !== 0) return repoCompare;
+        const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
+        const da = diffOrder[a.diffType] ?? 5;
+        const db = diffOrder[b.diffType] ?? 5;
+        if (da !== db) return da - db;
+        return a.name.localeCompare(b.name);
+      });
+
+      // Store sorted results for pagination
+      filteredResults = results;
+
+      // Pagination
+      const totalPages = Math.ceil(results.length / pageSize);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, results.length);
+      const pageResults = results.slice(startIdx, endIdx);
+
+      // Count components per repo (across all results, not just page)
+      const repoCountMap = {};
+      for (const r of results) { repoCountMap[r.repo] = (repoCountMap[r.repo] || 0) + 1; }
+
+      let lastRepo = '';
+      for (let pi = 0; pi < pageResults.length; pi++) {
+        const globalIdx = startIdx + pi;
+        const r = pageResults[pi];
+
+        // Insert group header when repo changes
+        if (r.repo !== lastRepo) {
+          lastRepo = r.repo;
+          const groupRow = document.createElement('tr');
+          groupRow.className = 'repo-group-header';
+          groupRow.innerHTML = `<td colspan="7">${r.repo}<span class="repo-group-count">${repoCountMap[r.repo]} component${repoCountMap[r.repo] !== 1 ? 's' : ''}</span></td>`;
+          body.appendChild(groupRow);
+        }
+
+        const shortName = r.name.replace('@vector-web-components/', '');
+        const canExpand = r.diffType !== 'current';
+
+        const tr = document.createElement('tr');
+        tr.dataset.index = globalIdx;
+        tr.innerHTML = `
+          <td><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
+          <td>${shortName}</td>
+          <td><span class="badge badge-gray">${r.version}</span></td>
+          <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' : '<span class="badge badge-gray">N/A</span>'}</td>
+          <td>${statusBadge(r)}</td>
+          <td><span class="dep-type">${r.depType}</span></td>
+          <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + globalIdx + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
+        `;
+        body.appendChild(tr);
+      }
+
+      // Show/hide pagination
+      if (results.length > 25) {
+        paginationToolbar.classList.remove('hidden');
+        renderPagination(results.length, totalPages);
+      } else {
+        paginationToolbar.classList.add('hidden');
+      }
+    }
+
+    function renderPagination(totalItems, totalPages) {
+      const info = document.getElementById('paginationInfo');
+      const controls = document.getElementById('paginationControls');
+      const startItem = (currentPage - 1) * pageSize + 1;
+      const endItem = Math.min(currentPage * pageSize, totalItems);
+
+      info.textContent = `Showing ${startItem}–${endItem} of ${totalItems} results`;
+
+      // Sync page size select
+      document.getElementById('pageSizeSelect').value = pageSize;
+
+      // Build page buttons
+      let html = '';
+      html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Prev</button>`;
+
+      // Show max 7 page buttons with ellipsis
+      const maxButtons = 7;
+      let pages = [];
+      if (totalPages <= maxButtons) {
+        pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+      } else {
+        pages = [1];
+        let start = Math.max(2, currentPage - 2);
+        let end = Math.min(totalPages - 1, currentPage + 2);
+        if (currentPage <= 3) { start = 2; end = 5; }
+        if (currentPage >= totalPages - 2) { start = totalPages - 4; end = totalPages - 1; }
+        if (start > 2) pages.push('...');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push('...');
+        pages.push(totalPages);
+      }
+
+      for (const p of pages) {
+        if (p === '...') {
+          html += `<button disabled style="border:none;background:none;cursor:default;">...</button>`;
+        } else {
+          html += `<button class="${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`;
+        }
+      }
+
+      html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>`;
+      controls.innerHTML = html;
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      renderTable(filteredResults);
+      // Scroll to top of table
+      document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function changePageSize(size) {
+      pageSize = parseInt(size, 10);
+      currentPage = 1;
+      renderTable(filteredResults);
+    }
+
+    function toggleDetail(idx, btn) {
+      const existing = document.getElementById('detail-' + idx);
+      if (existing) {
+        existing.remove();
+        btn.closest('tr').classList.remove('expanded');
+        btn.innerHTML = 'View changes &#9662;';
+        return;
+      }
+
+      btn.closest('tr').classList.add('expanded');
+      btn.innerHTML = 'Hide &#9652;';
+
+      const r = filteredResults[idx];
+      const detailRow = document.createElement('tr');
+      detailRow.className = 'detail-row';
+      detailRow.id = 'detail-' + idx;
+
+      let timelineHTML = '';
+
+      if (r.allVersions && r.allVersions.length > 0 && r.latestVersion) {
+        // Get versions between current and latest
+        const relevantVersions = r.allVersions.filter(v =>
+          compareSemver(v.version, r.version) > 0 && compareSemver(v.version, r.latestVersion) <= 0
+        );
+
+        // Also build a release map for body text from GitHub releases
+        const releaseMap = {};
+        if (r.releases && r.releases.length > 0) {
+          for (const rel of r.releases) {
+            // Match tag to version: v1.2.3 -> 1.2.3, comp@1.2.3 -> 1.2.3
+            const tag = rel.tag_name;
+            const verMatch = tag.match(/(\d+\.\d+\.\d+[^\s]*)/);
+            if (verMatch) releaseMap[verMatch[1]] = rel.body || '';
+          }
+        }
+
+        // Merge release body from releases into timeline entries
+        for (const v of relevantVersions) {
+          if (!v.body && releaseMap[v.version]) {
+            v.body = releaseMap[v.version];
+          }
+        }
+
+        const displayVersions = relevantVersions.slice(-10);
+
+        timelineHTML = '<div class="version-timeline">';
+
+        // Current (installed) version
+        timelineHTML += `<div class="version-entry current">
+          <span class="ver-label">${r.version}</span> <span class="ver-date">(installed)</span>
+        </div>`;
+
+        for (const v of displayVersions) {
+          const isLatest = v.version === r.latestVersion;
+          const date = v.date ? new Date(v.date).toLocaleDateString() : '';
+
+          let notes = '';
+          if (v.body) {
+            notes = v.body
+              .split('\n')
+              .filter(l => l.trim())
+              .slice(0, 10)
+              .map(l => {
+                l = l.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (l.match(/^[\*\-]\s/)) return '<li>' + l.replace(/^[\*\-]\s/, '') + '</li>';
+                if (l.match(/^#+\s/)) return '<strong>' + l.replace(/^#+\s/, '') + '</strong>';
+                return l;
+              })
+              .join('');
+            if (notes.includes('<li>')) notes = '<ul>' + notes + '</ul>';
+          }
+
+          timelineHTML += `<div class="version-entry ${isLatest ? 'latest' : ''}">
+            <span class="ver-label">${v.version}</span>
+            ${isLatest ? ' <span class="badge badge-green" style="font-size:0.7rem">LATEST</span>' : ''}
+            <span class="ver-date">${date}</span>
+            ${notes ? '<div class="ver-notes">' + notes + '</div>' : ''}
+          </div>`;
+        }
+
+        if (relevantVersions.length > 10) {
+          timelineHTML += `<div style="padding-left:16px;font-size:0.8rem;color:var(--text-muted);">...and ${relevantVersions.length - 10} more versions</div>`;
+        }
+
+        timelineHTML += '</div>';
+      }
+
+      // Header label
+      let headerHTML = '';
+      if (r.latestVersion && r.diffType !== 'unknown') {
+        const diffLabel = r.diffType === 'major' ? 'Major version upgrade' : r.diffType === 'minor' ? 'Minor version upgrade' : 'Patch upgrade';
+        const missedCount = r.allVersions ? r.allVersions.filter(v => compareSemver(v.version, r.version) > 0 && compareSemver(v.version, r.latestVersion) <= 0).length : 0;
+        headerHTML = `<h4>${diffLabel}: ${r.version} &rarr; ${r.latestVersion}${missedCount ? ' (' + missedCount + ' versions behind)' : ''}</h4>`;
+      } else {
+        headerHTML = `<h4>Version details for ${r.name.replace('@vector-web-components/', '')}</h4>`;
+      }
+
+      // Fallback message when no data is available
+      const fallbackHTML = `
+        <div style="padding:12px 0;">
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:8px;">
+            Could not resolve version history. The package may be on a private npm registry.
+          </p>
+          <p style="font-size:0.85rem;">
+            <strong>To enable upgrade detection:</strong> enter the component library's GitHub repo path
+            (e.g. <code>my-org/vector-web-components</code>) in the <em>Component Library Repo</em> field above and re-scan.
+          </p>
+        </div>
+      `;
+
+      detailRow.innerHTML = `<td colspan="7">
+        <div class="detail-panel">
+          ${headerHTML}
+          ${timelineHTML || fallbackHTML}
+        </div>
+      </td>`;
+
+      btn.closest('tr').after(detailRow);
+    }
+
+    function filterTable() {
+      const q = document.getElementById('tableFilter').value.toLowerCase();
+      currentPage = 1;
+      if (!q) {
+        filteredResults = [...allResults];
+      } else {
+        filteredResults = allResults.filter(r => {
+          const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType).toLowerCase();
+          return text.includes(q);
+        });
+      }
+      renderTable(filteredResults);
+    }
+
+    function clearResults() {
+      document.getElementById('resultsSection').classList.add('hidden');
+      document.getElementById('resultsBody').innerHTML = '';
+      setStatus('');
+      setProgress(100);
+      allResults = [];
+      filteredResults = [];
+      currentPage = 1;
+    }
+  </script>
+</body>
+
+</html>
