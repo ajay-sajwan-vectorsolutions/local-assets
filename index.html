@@ -55,7 +55,6 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      overflow: hidden;
     }
     .card-header {
       padding: 16px 24px;
@@ -69,7 +68,8 @@
     .card-body { padding: 24px; }
 
     /* Config Panel */
-    .config-card { margin-bottom: 24px; }
+    .config-card { margin-bottom: 24px; overflow: visible; }
+    .table-card { overflow: hidden; }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .form-full { grid-column: 1 / -1; }
     .form-group { display: flex; flex-direction: column; }
@@ -103,6 +103,8 @@
     .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; transform: none; box-shadow: none; }
     .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
     .btn-ghost:hover { background: var(--surface-alt); }
+    .btn-cancel { background: var(--red); color: #fff; }
+    .btn-cancel:hover { background: #dc2626; transform: translateY(-1px); box-shadow: var(--shadow-lg); }
 
     .status-msg { font-size: 0.85rem; color: var(--text-muted); margin-left: 8px; }
     .status-msg.error { color: var(--red); }
@@ -236,6 +238,174 @@
 
     .hidden { display: none !important; }
 
+    /* Repo Picker */
+    .repo-picker { position: relative; }
+    .repo-picker-trigger {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px 14px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface-alt);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .repo-picker-trigger:hover { border-color: #94a3b8; }
+    .repo-picker-trigger.open { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); background: #fff; }
+    .repo-picker-trigger .arrow { margin-left: auto; font-size: 0.7rem; transition: transform 0.2s; }
+    .repo-picker-trigger.open .arrow { transform: rotate(180deg); }
+    .repo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #eff6ff;
+      color: var(--primary-dark);
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+    .repo-chip .chip-x {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #93c5fd;
+      margin-left: 2px;
+    }
+    .repo-chip .chip-x:hover { color: var(--red); }
+    .repo-picker-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      z-index: 100;
+      display: none;
+    }
+    .repo-picker-dropdown.open { display: block; }
+    .repo-picker-dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .repo-picker-search {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: var(--surface-alt);
+    }
+    .repo-picker-search:focus { outline: none; border-color: var(--primary); }
+    .btn-select-all {
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-alt);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--text);
+    }
+    .btn-select-all:hover { background: #e2e8f0; }
+    .repo-picker-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .repo-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.1s;
+    }
+    .repo-item:hover { background: var(--surface-alt); }
+    .repo-item input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+    .repo-item label { cursor: pointer; flex: 1; }
+    .repo-picker-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    .btn-load-repos {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--primary);
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-load-repos:hover { background: #eff6ff; border-color: var(--primary); }
+    .btn-load-repos:disabled { color: #93c5fd; cursor: not-allowed; }
+
+    /* Pagination */
+    .pagination-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pagination-info { white-space: nowrap; }
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-controls button {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+    .pagination-controls button:hover:not(:disabled) { background: var(--surface-alt); border-color: var(--primary); color: var(--primary); }
+    .pagination-controls button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .pagination-controls button:disabled { color: #cbd5e1; cursor: not-allowed; }
+    .page-size-select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    /* Config disabled during scan */
+    .config-card.disabled .card-body {
+      pointer-events: none;
+      opacity: 0.55;
+      user-select: none;
+    }
+    .config-card.disabled .actions {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
       .container { padding: 16px; }
@@ -272,9 +442,29 @@
             <span class="help-text">Needs repo read access. Used only for in-browser GitHub API calls.</span>
           </div>
           <div class="form-group">
-            <label>Repos to Scan (comma-separated)</label>
-            <input type="text" id="repoList" value="ts-react, eval-pd-spa, lti-react" />
-            <span class="help-text">Leave empty to scan all org repos.</span>
+            <label>Repos to Scan</label>
+            <div style="display:flex;gap:8px;align-items:start;">
+              <div class="repo-picker" style="flex:1;" id="repoPicker">
+                <div class="repo-picker-trigger" id="repoPickerTrigger" onclick="toggleRepoPicker()">
+                  <span id="repoPickerPlaceholder">Click "Load Repos" to fetch org repositories</span>
+                  <span class="arrow">&#9660;</span>
+                </div>
+                <div class="repo-picker-dropdown" id="repoPickerDropdown">
+                  <div class="repo-picker-dropdown-header">
+                    <input class="repo-picker-search" type="text" id="repoSearch" placeholder="Filter repos..." oninput="filterRepos()" />
+                    <button class="btn-select-all" id="btnSelectAll" onclick="toggleSelectAll()">Select All</button>
+                  </div>
+                  <div class="repo-picker-list" id="repoPickerList">
+                    <div class="repo-picker-empty">No repos loaded yet.</div>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-load-repos" id="loadReposBtn" onclick="loadOrgRepos()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Load Repos
+              </button>
+            </div>
+            <span class="help-text">Load repos from the org, then select which to scan.</span>
           </div>
           <div class="form-group">
             <label>Component Library Repo</label>
@@ -285,6 +475,10 @@
           <button class="btn btn-primary" id="scanBtn" onclick="startScan()">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             Scan Repos
+          </button>
+          <button class="btn btn-cancel hidden" id="cancelBtn" onclick="cancelScan()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            Cancel
           </button>
           <button class="btn btn-ghost" onclick="clearResults()">Clear</button>
           <span class="status-msg" id="statusText"></span>
@@ -343,6 +537,20 @@
             <tbody id="resultsBody"></tbody>
           </table>
         </div>
+        <div class="pagination-toolbar hidden" id="paginationToolbar">
+          <div class="pagination-info" id="paginationInfo"></div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div>
+              <label style="font-size:0.82rem;color:var(--text-muted);margin-right:4px;">Rows:</label>
+              <select class="page-size-select" id="pageSizeSelect" onchange="changePageSize(this.value)">
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+            <div class="pagination-controls" id="paginationControls"></div>
+          </div>
+        </div>
         <div class="no-results hidden" id="noResults">
           <div class="icon">&#128269;</div>
           No @vector-web-components found in the scanned repos.
@@ -355,9 +563,25 @@
   <script>
     // ── State ──
     let allResults = [];
+    let filteredResults = [];
     let chartByRepo = null;
     let chartFreshness = null;
     const npmCache = {};
+
+    // Repo picker state
+    let orgRepos = [];        // all fetched repo names
+    let selectedRepos = new Set(); // currently selected repo names
+    let reposLoaded = false;
+
+    // Pagination state
+    let currentPage = 1;
+    let pageSize = 25;
+
+    // Scan abort controller
+    let scanAbort = null;
+
+    // Default repos to pre-select after loading
+    const DEFAULT_REPOS = ['ts-react', 'eval-pd-spa', 'lti-react'];
 
     // ── Helpers ──
     function setStatus(msg, isError) {
@@ -375,11 +599,199 @@
 
     function setLoading(on) {
       const btn = document.getElementById('scanBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
       btn.disabled = on;
       btn.innerHTML = on
         ? '<span class="spinner"></span> Scanning...'
         : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Scan Repos';
+
+      // Show/hide cancel button
+      cancelBtn.classList.toggle('hidden', !on);
+
+      // Disable/enable the entire config card during scan
+      const configCard = document.querySelector('.config-card');
+      configCard.classList.toggle('disabled', on);
+
+      // Close the repo picker dropdown if open
+      if (on) {
+        document.getElementById('repoPickerDropdown').classList.remove('open');
+        document.getElementById('repoPickerTrigger').classList.remove('open');
+      }
     }
+
+    function cancelScan() {
+      if (scanAbort) {
+        scanAbort.abort();
+      }
+    }
+
+    // ── Repo Picker ──
+    async function loadOrgRepos() {
+      const org = document.getElementById('orgName').textContent.trim();
+      const token = document.getElementById('ghToken').value.trim();
+      if (!token) { setStatus('Please enter a GitHub token first.', true); return; }
+
+      const btn = document.getElementById('loadReposBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="border-color:rgba(59,130,246,0.3);border-top-color:var(--primary);width:14px;height:14px;"></span> Loading...';
+
+      try {
+        orgRepos = [];
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
+          if (!data || data.length === 0) break;
+          orgRepos.push(...data.map(r => r.name));
+          if (data.length < 100) break;
+          page++;
+        }
+        orgRepos.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        // Pre-select defaults
+        selectedRepos.clear();
+        for (const d of DEFAULT_REPOS) {
+          if (orgRepos.includes(d)) selectedRepos.add(d);
+        }
+
+        reposLoaded = true;
+        renderRepoPickerList();
+        updateRepoPickerTrigger();
+        setStatus(`Loaded ${orgRepos.length} repos from ${org}.`);
+      } catch (err) {
+        setStatus('Failed to load repos: ' + err.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Load Repos';
+      }
+    }
+
+    function renderRepoPickerList(filter) {
+      const list = document.getElementById('repoPickerList');
+      const filtered = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter.toLowerCase()))
+        : orgRepos;
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="repo-picker-empty">No repos match your filter.</div>';
+        return;
+      }
+
+      list.innerHTML = filtered.map(name => `
+        <div class="repo-item" onclick="toggleRepoSelection('${name}')">
+          <input type="checkbox" ${selectedRepos.has(name) ? 'checked' : ''} tabindex="-1" />
+          <label>${name}</label>
+        </div>
+      `).join('');
+    }
+
+    function toggleRepoPicker() {
+      if (!reposLoaded) return;
+      const trigger = document.getElementById('repoPickerTrigger');
+      const dropdown = document.getElementById('repoPickerDropdown');
+      const isOpen = dropdown.classList.contains('open');
+
+      if (isOpen) {
+        dropdown.classList.remove('open');
+        trigger.classList.remove('open');
+      } else {
+        dropdown.classList.add('open');
+        trigger.classList.add('open');
+        document.getElementById('repoSearch').value = '';
+        renderRepoPickerList();
+        document.getElementById('repoSearch').focus();
+      }
+    }
+
+    function toggleRepoSelection(name) {
+      if (selectedRepos.has(name)) {
+        selectedRepos.delete(name);
+      } else {
+        selectedRepos.add(name);
+      }
+      const filter = document.getElementById('repoSearch').value;
+      renderRepoPickerList(filter);
+      updateRepoPickerTrigger();
+    }
+
+    function removeRepoChip(name, event) {
+      event.stopPropagation();
+      selectedRepos.delete(name);
+      renderRepoPickerList(document.getElementById('repoSearch').value);
+      updateRepoPickerTrigger();
+    }
+
+    function toggleSelectAll() {
+      const filter = document.getElementById('repoSearch').value.toLowerCase();
+      const visible = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter))
+        : orgRepos;
+
+      const allSelected = visible.every(r => selectedRepos.has(r));
+      if (allSelected) {
+        for (const r of visible) selectedRepos.delete(r);
+      } else {
+        for (const r of visible) selectedRepos.add(r);
+      }
+
+      renderRepoPickerList(filter);
+      updateRepoPickerTrigger();
+      updateSelectAllButton();
+    }
+
+    function updateSelectAllButton() {
+      const filter = document.getElementById('repoSearch').value.toLowerCase();
+      const visible = filter
+        ? orgRepos.filter(r => r.toLowerCase().includes(filter))
+        : orgRepos;
+      const allSelected = visible.length > 0 && visible.every(r => selectedRepos.has(r));
+      document.getElementById('btnSelectAll').textContent = allSelected ? 'Deselect All' : 'Select All';
+    }
+
+    function filterRepos() {
+      const filter = document.getElementById('repoSearch').value;
+      renderRepoPickerList(filter);
+      updateSelectAllButton();
+    }
+
+    function updateRepoPickerTrigger() {
+      const trigger = document.getElementById('repoPickerTrigger');
+      const placeholder = document.getElementById('repoPickerPlaceholder');
+      const count = selectedRepos.size;
+
+      // Remove existing chips
+      trigger.querySelectorAll('.repo-chip').forEach(el => el.remove());
+
+      if (count === 0) {
+        placeholder.textContent = reposLoaded ? 'No repos selected — click to select' : 'Click "Load Repos" to fetch org repositories';
+        placeholder.style.display = '';
+      } else if (count <= 5) {
+        placeholder.style.display = 'none';
+        const arrow = trigger.querySelector('.arrow');
+        const sorted = [...selectedRepos].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        for (const name of sorted) {
+          const chip = document.createElement('span');
+          chip.className = 'repo-chip';
+          chip.innerHTML = `${name}<span class="chip-x" onclick="removeRepoChip('${name}', event)">&times;</span>`;
+          trigger.insertBefore(chip, arrow);
+        }
+      } else {
+        placeholder.textContent = `${count} repos selected`;
+        placeholder.style.display = '';
+      }
+    }
+
+    function getSelectedRepos() {
+      return [...selectedRepos];
+    }
+
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+      const picker = document.getElementById('repoPicker');
+      if (picker && !picker.contains(e.target)) {
+        document.getElementById('repoPickerDropdown').classList.remove('open');
+        document.getElementById('repoPickerTrigger').classList.remove('open');
+      }
+    });
 
     function parseSemver(v) {
       const clean = v.replace(/^[^\d]*/, '');
@@ -405,10 +817,12 @@
     }
 
     // ── GitHub API ──
-    async function ghFetch(url, token) {
+    async function ghFetch(url, token, signal) {
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
       if (token) headers['Authorization'] = 'token ' + token;
-      const resp = await fetch(url, { headers });
+      const opts = { headers };
+      if (signal) opts.signal = signal;
+      const resp = await fetch(url, opts);
       if (!resp.ok) {
         if (resp.status === 404) return null;
         throw new Error(`GitHub API ${resp.status}: ${resp.statusText}`);
@@ -416,9 +830,9 @@
       return resp.json();
     }
 
-    async function fetchFileContent(fullRepoPath, filePath, token) {
+    async function fetchFileContent(fullRepoPath, filePath, token, signal) {
       const url = `https://api.github.com/repos/${fullRepoPath}/contents/${filePath}`;
-      const data = await ghFetch(url, token);
+      const data = await ghFetch(url, token, signal);
       if (!data || !data.content) return null;
       try { return JSON.parse(atob(data.content)); }
       catch { return null; }
@@ -432,10 +846,10 @@
         .map(([name, version]) => ({ name, version, depType }));
     }
 
-    async function scanRepo(org, repo, token) {
+    async function scanRepo(org, repo, token, signal) {
       const results = [];
 
-      const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token);
+      const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token, signal);
       if (rootPkg) {
         for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
           for (const c of extractVectorComponents(rootPkg, dt)) {
@@ -446,11 +860,11 @@
 
       for (const subdir of ['packages', 'apps', 'libs']) {
         try {
-          const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token);
+          const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token, signal);
           if (dirData && Array.isArray(dirData)) {
             for (const item of dirData) {
               if (item.type === 'dir') {
-                const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token);
+                const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token, signal);
                 if (subPkg) {
                   for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
                     for (const c of extractVectorComponents(subPkg, dt)) {
@@ -461,7 +875,7 @@
               }
             }
           }
-        } catch { /* subdir not found */ }
+        } catch (e) { if (e.name === 'AbortError') throw e; /* subdir not found */ }
       }
 
       return results;
@@ -474,7 +888,7 @@
     //   3. Fetch GitHub releases for changelogs
     //   4. Fall back to npm registry if lib repo is not provided
 
-    async function resolveFromGitHubRepo(libRepoPath, token) {
+    async function resolveFromGitHubRepo(libRepoPath, token, signal) {
       // Returns { latestVersions: { '@vector-web-components/foo': '1.2.3', ... }, releases: [...] }
       const result = { latestVersions: {}, releases: [], allTags: [] };
 
@@ -482,36 +896,36 @@
       try {
         let page = 1;
         while (true) {
-          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/releases?per_page=100&page=${page}`, token);
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/releases?per_page=100&page=${page}`, token, signal);
           if (!data || data.length === 0) break;
           result.releases.push(...data);
           if (data.length < 100) break;
           page++;
         }
-      } catch { /* no releases */ }
+      } catch (e) { if (e.name === 'AbortError') throw e; /* no releases */ }
 
       // 2. Fetch tags to extract version numbers
       try {
         let page = 1;
         while (true) {
-          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/tags?per_page=100&page=${page}`, token);
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/tags?per_page=100&page=${page}`, token, signal);
           if (!data || data.length === 0) break;
           result.allTags.push(...data.map(t => t.name));
           if (data.length < 100) break;
           page++;
         }
-      } catch { /* no tags */ }
+      } catch (e) { if (e.name === 'AbortError') throw e; /* no tags */ }
 
       // 3. Try to find component packages in the repo by scanning common monorepo dirs
       for (const dir of ['packages', 'components', 'libs', 'modules', '']) {
         try {
           const basePath = dir || '.';
-          const dirData = await ghFetch(`https://api.github.com/repos/${libRepoPath}/contents/${dir}`, token);
+          const dirData = await ghFetch(`https://api.github.com/repos/${libRepoPath}/contents/${dir}`, token, signal);
           if (!dirData || !Array.isArray(dirData)) continue;
 
           for (const item of dirData) {
             if (item.type !== 'dir') continue;
-            const pkg = await fetchFileContent(libRepoPath, `${dir ? dir + '/' : ''}${item.name}/package.json`, token);
+            const pkg = await fetchFileContent(libRepoPath, `${dir ? dir + '/' : ''}${item.name}/package.json`, token, signal);
             if (pkg && pkg.name && pkg.name.startsWith('@vector-web-components/')) {
               result.latestVersions[pkg.name] = pkg.version;
             }
@@ -519,7 +933,7 @@
 
           // If we found components, stop scanning other dirs
           if (Object.keys(result.latestVersions).length > 0) break;
-        } catch { /* dir not found */ }
+        } catch (e) { if (e.name === 'AbortError') throw e; /* dir not found */ }
       }
 
       // 4. If no packages found via directory scan, try to parse tags
@@ -560,7 +974,7 @@
 
         // If only root tags found, check the repo's own package.json
         if (Object.keys(result.latestVersions).length === 0 && tagVersions['__root__']) {
-          const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token);
+          const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token, signal);
           if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
             tagVersions['__root__'].sort(compareSemver);
             result.latestVersions[rootPkg.name] = tagVersions['__root__'][tagVersions['__root__'].length - 1];
@@ -570,7 +984,7 @@
 
       // 5. Last resort: check root package.json of lib repo
       if (Object.keys(result.latestVersions).length === 0) {
-        const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token);
+        const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token, signal);
         if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
           result.latestVersions[rootPkg.name] = rootPkg.version;
         }
@@ -616,12 +1030,13 @@
     }
 
     // ── npm Registry (fallback) ──
-    async function fetchNpmLatest(packageName) {
+    async function fetchNpmLatest(packageName, signal) {
       if (npmCache[packageName] !== undefined) return npmCache[packageName];
 
       try {
         const url = `https://registry.npmjs.org/${packageName.replace('/', '%2F')}`;
-        const resp = await fetch(url);
+        const opts = signal ? { signal } : {};
+        const resp = await fetch(url, opts);
         if (!resp.ok) { npmCache[packageName] = null; return null; }
         const data = await resp.json();
         const latest = data['dist-tags'] && data['dist-tags'].latest;
@@ -646,46 +1061,85 @@
     async function startScan() {
       const org = document.getElementById('orgName').textContent.trim();
       const token = document.getElementById('ghToken').value.trim();
-      const repoInput = document.getElementById('repoList').value.trim();
       const libRepo = document.getElementById('libRepo').textContent.trim();
 
       if (!org) { setStatus('Please enter an organization name.', true); return; }
       if (!token) { setStatus('Please enter a GitHub token.', true); return; }
 
-      const repoNames = repoInput ? repoInput.split(',').map(r => r.trim()).filter(Boolean) : [];
+      const repos = getSelectedRepos();
+      if (repos.length === 0) {
+        setStatus('Please select at least one repo to scan. Use "Load Repos" first.', true);
+        return;
+      }
+
+      scanAbort = new AbortController();
+      const signal = scanAbort.signal;
+
       setLoading(true);
       setStatus('');
       setProgress(0);
       document.getElementById('resultsSection').classList.add('hidden');
 
       try {
-        let repos = repoNames;
 
-        if (repos.length === 0) {
-          setStatus('Fetching org repos...');
+        // ── Phase 0: Pre-filter repos using GitHub Code Search ──
+        setStatus(`Pre-filtering ${repos.length} repos for @vector-web-components usage...`);
+        setProgress(2);
+        let reposToScan = repos;
+        try {
+          const codeSearchHits = new Set();
           let page = 1;
-          repos = [];
           while (true) {
-            const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
-            if (!data || data.length === 0) break;
-            repos.push(...data.map(r => r.name));
-            if (data.length < 100) break;
+            const data = await ghFetch(
+              `https://api.github.com/search/code?q=%22%40vector-web-components%22+filename%3Apackage.json+org%3A${encodeURIComponent(org)}&per_page=100&page=${page}`,
+              token, signal
+            );
+            if (!data || !data.items || data.items.length === 0) break;
+            for (const item of data.items) {
+              if (item.repository && item.repository.name) {
+                codeSearchHits.add(item.repository.name);
+              }
+            }
+            if (data.items.length < 100) break;
             page++;
           }
+          // Keep only selected repos that have hits
+          if (codeSearchHits.size > 0) {
+            reposToScan = repos.filter(r => codeSearchHits.has(r));
+            setStatus(`Found ${reposToScan.length} of ${repos.length} selected repos with @vector-web-components usage.`);
+          }
+          // If code search returned nothing (e.g. API issue), fall back to scanning all selected
+        } catch (e) {
+          if (e.name === 'AbortError') throw e;
+          // Code search failed (rate limit, permissions, etc.) — fall back to full scan
+          setStatus(`Code search unavailable, scanning all ${repos.length} selected repos...`);
         }
+        setProgress(10);
 
-        // ── Phase 1: Scan consumer repos for component usage ──
+        // ── Phase 1: Scan consumer repos for component usage (concurrent) ──
         allResults = [];
         const errors = [];
+        const CONCURRENCY = 5;
 
-        for (let i = 0; i < repos.length; i++) {
-          setStatus(`Scanning ${repos[i]} (${i + 1}/${repos.length})...`);
-          setProgress(((i + 1) / repos.length) * 40);
-          try {
-            const results = await scanRepo(org, repos[i], token);
-            allResults.push(...results);
-          } catch (err) {
-            errors.push(`${repos[i]}: ${err.message}`);
+        for (let i = 0; i < reposToScan.length; i += CONCURRENCY) {
+          if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
+
+          const batch = reposToScan.slice(i, i + CONCURRENCY);
+          setStatus(`Scanning repos ${i + 1}–${Math.min(i + CONCURRENCY, reposToScan.length)} of ${reposToScan.length}...`);
+          setProgress(10 + ((i + 1) / reposToScan.length) * 30);
+
+          const batchResults = await Promise.allSettled(
+            batch.map(repo => scanRepo(org, repo, token, signal))
+          );
+
+          for (let j = 0; j < batchResults.length; j++) {
+            if (batchResults[j].status === 'fulfilled') {
+              allResults.push(...batchResults[j].value);
+            } else {
+              const reason = batchResults[j].reason;
+              if (reason && reason.name === 'AbortError') throw reason;
+              errors.push(`${batch[j]}: ${reason?.message || 'Unknown error'}`);
+            }
           }
         }
 
@@ -696,19 +1150,22 @@
         // Strategy A: Use the component library GitHub repo (preferred)
         if (libRepo) {
           setStatus('Scanning component library repo for latest versions...');
-          setProgress(45);
+          setProgress(50);
           try {
-            libData = await resolveFromGitHubRepo(libRepo, token);
+            libData = await resolveFromGitHubRepo(libRepo, token, signal);
           } catch (err) {
+            if (err.name === 'AbortError') throw err;
             errors.push(`Library repo (${libRepo}): ${err.message}`);
           }
         }
 
         // Apply version info to each result
         for (let i = 0; i < uniquePackages.length; i++) {
+          if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
+
           const pkg = uniquePackages[i];
           setStatus(`Resolving versions: ${pkg.replace('@vector-web-components/', '')} (${i + 1}/${uniquePackages.length})...`);
-          setProgress(50 + ((i + 1) / uniquePackages.length) * 35);
+          setProgress(55 + ((i + 1) / uniquePackages.length) * 40);
 
           let latestVersion = null;
           let versionTimeline = [];
@@ -723,7 +1180,7 @@
 
           // Fallback: try npm registry
           if (!latestVersion) {
-            const npmInfo = await fetchNpmLatest(pkg);
+            const npmInfo = await fetchNpmLatest(pkg, signal);
             if (npmInfo) {
               latestVersion = npmInfo.latest;
               versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
@@ -740,11 +1197,19 @@
         }
 
         setProgress(100);
-        renderDashboard(allResults, repos.length, errors);
-        setStatus(errors.length ? `Done with ${errors.length} error(s).` : 'Scan complete.');
+        const skipped = repos.length - reposToScan.length;
+        const skippedMsg = skipped > 0 ? ` (${skipped} repos skipped — no component usage found)` : '';
+        renderDashboard(allResults, reposToScan.length, errors);
+        setStatus(errors.length ? `Done with ${errors.length} error(s).${skippedMsg}` : `Scan complete.${skippedMsg}`);
       } catch (err) {
-        setStatus('Error: ' + err.message, true);
+        if (err.name === 'AbortError') {
+          setStatus('Scan cancelled.');
+          setProgress(100);
+        } else {
+          setStatus('Error: ' + err.message, true);
+        }
       } finally {
+        scanAbort = null;
         setLoading(false);
       }
     }
@@ -770,6 +1235,8 @@
       }
 
       renderCharts(results);
+      currentPage = 1;
+      document.getElementById('tableFilter').value = '';
       renderTable(results);
     }
 
@@ -850,9 +1317,14 @@
     function renderTable(results) {
       const body = document.getElementById('resultsBody');
       const noResults = document.getElementById('noResults');
+      const paginationToolbar = document.getElementById('paginationToolbar');
       body.innerHTML = '';
 
-      if (results.length === 0) { noResults.classList.remove('hidden'); return; }
+      if (results.length === 0) {
+        noResults.classList.remove('hidden');
+        paginationToolbar.classList.add('hidden');
+        return;
+      }
       noResults.classList.add('hidden');
 
       // Sort: outdated first (major > minor > patch > unknown > current)
@@ -864,14 +1336,26 @@
         return a.repo.localeCompare(b.repo) || a.name.localeCompare(b.name);
       });
 
-      for (let i = 0; i < results.length; i++) {
-        const r = results[i];
+      // Store sorted results for pagination
+      filteredResults = results;
+
+      // Pagination
+      const totalPages = Math.ceil(results.length / pageSize);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIdx = (currentPage - 1) * pageSize;
+      const endIdx = Math.min(startIdx + pageSize, results.length);
+      const pageResults = results.slice(startIdx, endIdx);
+
+      for (let pi = 0; pi < pageResults.length; pi++) {
+        const globalIdx = startIdx + pi;
+        const r = pageResults[pi];
         const shortName = r.name.replace('@vector-web-components/', '');
-        // Show "View changes" for anything that isn't confirmed current
         const canExpand = r.diffType !== 'current';
 
         const tr = document.createElement('tr');
-        tr.dataset.index = i;
+        tr.dataset.index = globalIdx;
         tr.innerHTML = `
           <td><strong>${r.repo}</strong><br><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
           <td>${shortName}</td>
@@ -879,10 +1363,75 @@
           <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' : '<span class="badge badge-gray">N/A</span>'}</td>
           <td>${statusBadge(r)}</td>
           <td><span class="dep-type">${r.depType}</span></td>
-          <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + i + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
+          <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + globalIdx + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
         `;
         body.appendChild(tr);
       }
+
+      // Show/hide pagination
+      if (results.length > 25) {
+        paginationToolbar.classList.remove('hidden');
+        renderPagination(results.length, totalPages);
+      } else {
+        paginationToolbar.classList.add('hidden');
+      }
+    }
+
+    function renderPagination(totalItems, totalPages) {
+      const info = document.getElementById('paginationInfo');
+      const controls = document.getElementById('paginationControls');
+      const startItem = (currentPage - 1) * pageSize + 1;
+      const endItem = Math.min(currentPage * pageSize, totalItems);
+
+      info.textContent = `Showing ${startItem}–${endItem} of ${totalItems} results`;
+
+      // Sync page size select
+      document.getElementById('pageSizeSelect').value = pageSize;
+
+      // Build page buttons
+      let html = '';
+      html += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">Prev</button>`;
+
+      // Show max 7 page buttons with ellipsis
+      const maxButtons = 7;
+      let pages = [];
+      if (totalPages <= maxButtons) {
+        pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+      } else {
+        pages = [1];
+        let start = Math.max(2, currentPage - 2);
+        let end = Math.min(totalPages - 1, currentPage + 2);
+        if (currentPage <= 3) { start = 2; end = 5; }
+        if (currentPage >= totalPages - 2) { start = totalPages - 4; end = totalPages - 1; }
+        if (start > 2) pages.push('...');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push('...');
+        pages.push(totalPages);
+      }
+
+      for (const p of pages) {
+        if (p === '...') {
+          html += `<button disabled style="border:none;background:none;cursor:default;">...</button>`;
+        } else {
+          html += `<button class="${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`;
+        }
+      }
+
+      html += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Next</button>`;
+      controls.innerHTML = html;
+    }
+
+    function changePage(page) {
+      currentPage = page;
+      renderTable(filteredResults);
+      // Scroll to top of table
+      document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function changePageSize(size) {
+      pageSize = parseInt(size, 10);
+      currentPage = 1;
+      renderTable(filteredResults);
     }
 
     function toggleDetail(idx, btn) {
@@ -897,7 +1446,7 @@
       btn.closest('tr').classList.add('expanded');
       btn.innerHTML = 'Hide &#9652;';
 
-      const r = allResults[idx];
+      const r = filteredResults[idx];
       const detailRow = document.createElement('tr');
       detailRow.className = 'detail-row';
       detailRow.id = 'detail-' + idx;
@@ -1007,11 +1556,16 @@
 
     function filterTable() {
       const q = document.getElementById('tableFilter').value.toLowerCase();
-      const rows = document.querySelectorAll('#resultsBody tr:not(.detail-row)');
-      rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(q) ? '' : 'none';
-      });
+      currentPage = 1;
+      if (!q) {
+        filteredResults = [...allResults];
+      } else {
+        filteredResults = allResults.filter(r => {
+          const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType).toLowerCase();
+          return text.includes(q);
+        });
+      }
+      renderTable(filteredResults);
     }
 
     function clearResults() {
@@ -1020,6 +1574,8 @@
       setStatus('');
       setProgress(100);
       allResults = [];
+      filteredResults = [];
+      currentPage = 1;
     }
   </script>
 </body>
