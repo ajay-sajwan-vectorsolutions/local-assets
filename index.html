@@ -321,7 +321,7 @@
     }
     .btn-select-all:hover { background: #e2e8f0; }
     .repo-picker-list {
-      max-height: 500px;
+      max-height: 300px;
       overflow-y: auto;
       padding: 4px 0;
     }
@@ -891,6 +891,18 @@
       }
     });
 
+    // ── Console error suppression during scans ──
+    const _origConsoleError = console.error;
+    const _origConsoleWarn = console.warn;
+    function suppressConsoleErrors() {
+      console.error = () => {};
+      console.warn = () => {};
+    }
+    function restoreConsoleErrors() {
+      console.error = _origConsoleError;
+      console.warn = _origConsoleWarn;
+    }
+
     // ── State ──
     let allResults = [];
     let filteredResults = [];
@@ -1406,6 +1418,7 @@
       const signal = scanAbort.signal;
 
       setLoading(true);
+      suppressConsoleErrors();
       setStatus('');
       setProgress(0);
       document.getElementById('resultsSection').classList.add('hidden');
@@ -1539,6 +1552,7 @@
           setStatus('Error: ' + err.message, true);
         }
       } finally {
+        restoreConsoleErrors();
         scanAbort = null;
         setLoading(false);
       }
