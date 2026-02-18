@@ -215,19 +215,6 @@
       color: var(--red);
     }
 
-    .status-msg.success {
-      color: var(--green);
-      font-weight: 600;
-    }
-
-    .status-msg.warning .success-part {
-      color: var(--green);
-    }
-
-    .status-msg.warning .warn-part {
-      color: var(--amber);
-    }
-
     /* Progress bar */
     .progress-wrap {
       height: 4px;
@@ -323,7 +310,6 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
     .filter-input {
@@ -1060,21 +1046,44 @@
       line-height: 1.5;
     }
 
-    /* Toolbar filter selects */
-    .toolbar-select {
-      padding: 7px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.85rem;
+    /* Property Filters inside repo picker */
+    .repo-picker-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
       background: var(--surface-alt);
-      color: var(--text);
-      cursor: pointer;
-      max-width: 220px;
     }
 
-    .toolbar-select:focus {
+    .repo-picker-filters select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .repo-picker-filters select:focus {
       outline: none;
       border-color: var(--primary);
+    }
+
+    .repo-picker-filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .repo-picker-filter-group label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     /* Responsive */
@@ -1142,11 +1151,57 @@
                   <span id="repoPickerPlaceholder">Click "Load Repos" to fetch org repositories</span>
                   <span class="arrow">&#9660;</span>
                 </div>
-                <div class="repo-picker-dropdown" id="repoPickerDropdown">
+                <div class="repo-picker-dropdown open" id="repoPickerDropdown">
                   <div class="repo-picker-dropdown-header">
                     <input class="repo-picker-search" type="text" id="repoSearch" placeholder="Filter repos..."
                       oninput="filterRepos()" />
                     <button class="btn-select-all" id="btnSelectAll" onclick="toggleSelectAll()">Select All</button>
+                  </div>
+                  <!-- Property Filters -->
+                  <div class="repo-picker-filters">
+                    <div class="repo-picker-filter-group">
+                      <label>Product</label>
+                      <select id="filterProduct" onchange="applyPropertyFilters()">
+                        <option value="">All Products</option>
+                        <option value="RedVector LMS">RedVector LMS (12)</option>
+                        <option value="SafeLMS">SafeLMS (8)</option>
+                        <option value="Convergence LMS">Convergence LMS (15)</option>
+                        <option value="Target Solutions LMS">Target Solutions LMS (9)</option>
+                        <option value="Casino Essentials LMS">Casino Essentials LMS (3)</option>
+                        <option value="Journey LMS">Journey LMS (4)</option>
+                        <option value="Evaluations+/PD Tracking">Evaluations+/PD Tracking (7)</option>
+                        <option value="Content Studio">Content Studio (5)</option>
+                        <option value="Acadis">Acadis (6)</option>
+                        <option value="LTI">LTI (3)</option>
+                        <option value="Shared Services - UX">Shared Services - UX (11)</option>
+                        <option value="Shared Services - API">Shared Services - API (8)</option>
+                        <option value="IaC">IaC (14)</option>
+                        <option value="CI/CD Automation">CI/CD Automation (6)</option>
+                        <option value="Tooling">Tooling (4)</option>
+                        <option value="Archive - No Longer Used">Archive (18)</option>
+                      </select>
+                    </div>
+                    <div class="repo-picker-filter-group">
+                      <label>Repo Class</label>
+                      <select id="filterRepoClass" onchange="applyPropertyFilters()">
+                        <option value="">All Classes</option>
+                        <option value="Product Source Code">Source Code (142)</option>
+                        <option value="Supporting Code - IaC">IaC (28)</option>
+                        <option value="Supporting Code - CI/CD">CI/CD (19)</option>
+                        <option value="Supporting Code - QA">QA (11)</option>
+                        <option value="Supporting Code - Tooling">Tooling (8)</option>
+                        <option value="Documentation">Docs (6)</option>
+                        <option value="Supporting - Other">Other (5)</option>
+                      </select>
+                    </div>
+                    <div class="repo-picker-filter-group">
+                      <label>Monorepo</label>
+                      <select id="filterMonorepo" onchange="applyPropertyFilters()">
+                        <option value="">All</option>
+                        <option value="true">Yes (34)</option>
+                        <option value="false">No (189)</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="repo-picker-list" id="repoPickerList">
                     <div class="repo-picker-empty">No repos loaded yet.</div>
@@ -1244,12 +1299,6 @@
         <div class="table-toolbar">
           <input class="filter-input" type="text" id="tableFilter" placeholder="Filter by repo or component..."
             oninput="filterTable()" />
-          <select class="toolbar-select" id="filterProduct" onchange="filterTable()">
-            <option value="">All Products</option>
-          </select>
-          <select class="toolbar-select" id="filterRepoClass" onchange="filterTable()">
-            <option value="">All Classes</option>
-          </select>
         </div>
         <div style="overflow-x:clip;">
           <table>
@@ -1356,19 +1405,7 @@
         </div>
 
         <div class="modal-step" data-step="5">
-          <div class="modal-step-title"><span class="modal-step-badge">6</span>Enable read:org Scope</div>
-          <div class="modal-step-desc">
-            Scroll down to the <strong>admin:org</strong> section and check the <strong>read:org</strong> checkbox.
-          </div>
-          <div class="modal-step-img"><img src="docs/5-1.png"
-              alt="Check the read:org scope under admin:org" /></div>
-          <div class="modal-tip">
-            <strong>Why this is needed:</strong> The <code>read:org</code> scope allows the dashboard to read org-level custom properties (Product, Repo-Class) used for filtering scan results.
-          </div>
-        </div>
-
-        <div class="modal-step" data-step="6">
-          <div class="modal-step-title"><span class="modal-step-badge">7</span>Generate &amp; Copy the Token</div>
+          <div class="modal-step-title"><span class="modal-step-badge">6</span>Generate &amp; Copy the Token</div>
           <div class="modal-step-desc">
             Scroll to the bottom and click the green <strong>Generate token</strong> button.
           </div>
@@ -1392,7 +1429,7 @@
 
   <script>
     // ── PAT Guide Modal ──
-    const PAT_GUIDE_STEPS = 7;
+    const PAT_GUIDE_STEPS = 6;
     let patGuideStep = 0;
 
     function openPatGuide() {
@@ -1474,10 +1511,6 @@
     let selectedRepos = new Set(); // currently selected repo names
     let reposLoaded = false;
 
-    // Property filter state
-    let productMap = {};         // { repoName: "RedVector LMS", ... }
-    let repoClassMap = {};       // { repoName: "Product Source Code", ... }
-
     // Pagination state
     let currentPage = 1;
     let pageSize = 25;
@@ -1489,15 +1522,10 @@
     const DEFAULT_REPOS = ['ts-react', 'eval-pd-spa', 'lti-react'];
 
     // ── Helpers ──
-    function setStatus(msg, level) {
+    function setStatus(msg, isError) {
       const el = document.getElementById('statusText');
-      if (level === 'html') {
-        el.innerHTML = msg;
-        el.className = 'status-msg warning';
-      } else {
-        el.textContent = msg;
-        el.className = 'status-msg' + (level === 'error' ? ' error' : level === 'success' ? ' success' : '');
-      }
+      el.textContent = msg;
+      el.className = 'status-msg' + (isError ? ' error' : '');
     }
 
     function setProgress(pct) {
@@ -1535,106 +1563,32 @@
       }
     }
 
-    // ── Property Filters ──
-    let propsLoaded = false;
-
-    async function fetchPropertyValues(org, token, signal) {
-      try {
-        let page = 1;
-        while (true) {
-          const data = await ghFetch(`https://api.github.com/orgs/${org}/properties/values?per_page=100&page=${page}`, token, signal);
-          if (!data || !Array.isArray(data) || data.length === 0) break;
-          for (const repo of data) {
-            const name = repo.repository_name;
-            for (const prop of (repo.properties || [])) {
-              if (prop.property_name === 'Product') productMap[name] = prop.value || 'Unassigned';
-              if (prop.property_name === 'Repo-Class') repoClassMap[name] = prop.value || 'Unassigned';
-            }
-          }
-          if (data.length < 100) break;
-          page++;
-        }
-        propsLoaded = Object.keys(productMap).length > 0;
-      } catch (e) {
-        if (e.name === 'AbortError') throw e;
-        console.warn('Custom properties fetch failed:', e.message, '— Product/Repo-Class filters will be unavailable. Ensure your PAT has read:org scope.');
-      }
-    }
-
-    async function fetchRepoProperties(org, repos, token, signal) {
-      // Per-repo fallback when bulk org endpoint fails
-      for (const repo of repos) {
-        if (productMap[repo]) continue; // already have it
-        try {
-          const data = await ghFetch(`https://api.github.com/repos/${org}/${repo}/properties/values`, token, signal);
-          if (data && Array.isArray(data)) {
-            for (const prop of data) {
-              if (prop.property_name === 'Product') productMap[repo] = prop.value || 'Unassigned';
-              if (prop.property_name === 'Repo-Class') repoClassMap[repo] = prop.value || 'Unassigned';
-            }
-          }
-        } catch (e) {
-          if (e.name === 'AbortError') throw e;
-          // silently skip — repo-level endpoint also failed
-        }
-      }
-    }
-
-    function populateResultFilters(results) {
-      const productSelect = document.getElementById('filterProduct');
-      const repoClassSelect = document.getElementById('filterRepoClass');
-
-      // Collect unique products and classes from scan results
-      const products = new Set();
-      const classes = new Set();
-      for (const r of results) {
-        const p = productMap[r.repo];
-        const c = repoClassMap[r.repo];
-        if (p) products.add(p);
-        if (c) classes.add(c);
-      }
-
-      const sortedProducts = [...products].sort((a, b) => a.localeCompare(b));
-      const sortedClasses = [...classes].sort((a, b) => a.localeCompare(b));
-
-      productSelect.innerHTML = '<option value="">All Products</option>' +
-        sortedProducts.map(v => `<option value="${v}">${v}</option>`).join('');
-
-      repoClassSelect.innerHTML = '<option value="">All Classes</option>' +
-        sortedClasses.map(v => `<option value="${v}">${v}</option>`).join('');
+    // ── Property Filters (stub) ──
+    function applyPropertyFilters() {
+      // Stub for mockup — does nothing yet
     }
 
     // ── Repo Picker ──
     async function loadOrgRepos() {
       const org = document.getElementById('orgName').textContent.trim();
       const token = document.getElementById('ghToken').value.trim();
-      if (!token) { setStatus('Please enter a GitHub token first.', 'error'); return; }
+      if (!token) { setStatus('Please enter a GitHub token first.', true); return; }
 
       const btn = document.getElementById('loadReposBtn');
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner" style="border-color:rgba(59,130,246,0.3);border-top-color:var(--primary);width:14px;height:14px;"></span> Loading...';
 
       try {
-        // Reset property filter state
-        productMap = {};
-        repoClassMap = {};
-        propsLoaded = false;
-
-        // Fetch repos and custom properties in parallel
-        const repoFetchPromise = (async () => {
-          orgRepos = [];
-          let page = 1;
-          while (true) {
-            const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
-            if (!data || data.length === 0) break;
-            orgRepos.push(...data.map(r => r.name));
-            if (data.length < 100) break;
-            page++;
-          }
-          orgRepos.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-        })();
-
-        await Promise.all([repoFetchPromise, fetchPropertyValues(org, token)]);
+        orgRepos = [];
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
+          if (!data || data.length === 0) break;
+          orgRepos.push(...data.map(r => r.name));
+          if (data.length < 100) break;
+          page++;
+        }
+        orgRepos.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 
         // Pre-select defaults
         selectedRepos.clear();
@@ -1645,13 +1599,9 @@
         reposLoaded = true;
         renderRepoPickerList();
         updateRepoPickerTrigger();
-        if (!propsLoaded) {
-          setStatus(`<span class="success-part">Loaded ${orgRepos.length} repos from ${org}.</span> <span class="warn-part">Warning: Product/Repo-Class filters unavailable — your PAT may need read:org scope.</span>`, 'html');
-        } else {
-          setStatus(`Loaded ${orgRepos.length} repos from ${org}.`, 'success');
-        }
+        setStatus(`Loaded ${orgRepos.length} repos from ${org}.`);
       } catch (err) {
-        setStatus('Failed to load repos: ' + err.message, 'error');
+        setStatus('Failed to load repos: ' + err.message, true);
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Load Repos';
@@ -2056,12 +2006,12 @@
       const token = document.getElementById('ghToken').value.trim();
       const libRepo = document.getElementById('libRepo').textContent.trim();
 
-      if (!org) { setStatus('Please enter an organization name.', 'error'); return; }
-      if (!token) { setStatus('Please enter a GitHub token.', 'error'); return; }
+      if (!org) { setStatus('Please enter an organization name.', true); return; }
+      if (!token) { setStatus('Please enter a GitHub token.', true); return; }
 
       const repos = getSelectedRepos();
       if (repos.length === 0) {
-        setStatus('Please select at least one repo to scan. Use "Load Repos" first.', 'error');
+        setStatus('Please select at least one repo to scan. Use "Load Repos" first.', true);
         return;
       }
 
@@ -2200,7 +2150,7 @@
           setStatus('Scan cancelled.');
           setProgress(100);
         } else {
-          setStatus('Error: ' + err.message, 'error');
+          setStatus('Error: ' + err.message, true);
         }
       } finally {
         restoreConsoleErrors();
@@ -2232,9 +2182,6 @@
       renderCharts(results);
       currentPage = 1;
       document.getElementById('tableFilter').value = '';
-      document.getElementById('filterProduct').value = '';
-      document.getElementById('filterRepoClass').value = '';
-      populateResultFilters(results);
       renderTable(results);
     }
 
@@ -2575,20 +2522,15 @@
 
     function filterTable() {
       const q = document.getElementById('tableFilter').value.toLowerCase();
-      const product = document.getElementById('filterProduct').value;
-      const repoClass = document.getElementById('filterRepoClass').value;
       currentPage = 1;
-
-      filteredResults = allResults.filter(r => {
-        if (product && productMap[r.repo] !== product) return false;
-        if (repoClass && repoClassMap[r.repo] !== repoClass) return false;
-        if (q) {
+      if (!q) {
+        filteredResults = [...allResults];
+      } else {
+        filteredResults = allResults.filter(r => {
           const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType).toLowerCase();
-          if (!text.includes(q)) return false;
-        }
-        return true;
-      });
-
+          return text.includes(q);
+        });
+      }
       renderTable(filteredResults);
     }
 
