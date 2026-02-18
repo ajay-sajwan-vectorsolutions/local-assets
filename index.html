@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vector Web Components Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #ffffff;
+      --surface-alt: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --green: #22c55e;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.06);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--surface-alt);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%);
+      color: #fff;
+      padding: 32px 40px 28px;
+    }
+    .header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+    .header p { color: #94a3b8; font-size: 0.9rem; margin-top: 4px; }
+
+    .container { max-width: 1280px; margin: 0 auto; padding: 24px 40px 60px; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-body { padding: 24px; }
+
+    /* Config Panel */
+    .config-card { margin-bottom: 24px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .form-full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+    .form-group input {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.15s ease;
+      background: var(--surface-alt);
+    }
+    .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); background: #fff; }
+    .help-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    .actions { display: flex; gap: 10px; align-items: center; }
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-alt); }
+
+    .status-msg { font-size: 0.85rem; color: var(--text-muted); margin-left: 8px; }
+    .status-msg.error { color: var(--red); }
+
+    /* Progress bar */
+    .progress-wrap { height: 4px; background: var(--border); border-radius: 2px; margin-top: 16px; display: none; overflow: hidden; }
+    .progress-wrap.active { display: block; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), #8b5cf6); border-radius: 2px; transition: width 0.3s ease; width: 0; }
+
+    /* Metric cards */
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+    }
+    .metric-card .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .metric-card .value { font-size: 2rem; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }
+    .metric-card .detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+    .metric-card.green .value { color: var(--green); }
+    .metric-card.amber .value { color: var(--amber); }
+    .metric-card.red .value { color: var(--red); }
+
+    /* Charts */
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+    .chart-container { position: relative; height: 280px; }
+
+    /* Table */
+    .table-card { margin-bottom: 24px; }
+    .table-toolbar { padding: 12px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .filter-input {
+      padding: 7px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      width: 240px;
+      background: var(--surface-alt);
+    }
+    .filter-input:focus { outline: none; border-color: var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 12px 20px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: var(--surface-alt);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    td { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem; vertical-align: middle; }
+    tr:hover td { background: #f8fafc; }
+    tr.expanded td { background: #eff6ff; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .badge-green { background: var(--green-bg); color: #15803d; border: 1px solid var(--green-border); }
+    .badge-amber { background: var(--amber-bg); color: #92400e; border: 1px solid var(--amber-border); }
+    .badge-red { background: var(--red-bg); color: #991b1b; border: 1px solid var(--red-border); }
+    .badge-gray { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    .dep-type { font-size: 0.78rem; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
+
+    .upgrade-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .upgrade-btn:hover { background: #eff6ff; }
+
+    /* Expandable detail row */
+    .detail-row td { padding: 0; background: #f8fafc; }
+    .detail-panel {
+      padding: 20px 24px;
+      border-left: 3px solid var(--primary);
+      margin: 0 20px 12px 20px;
+      background: #fff;
+      border-radius: 0 8px 8px 0;
+    }
+    .detail-panel h4 { font-size: 0.85rem; color: var(--text); margin-bottom: 12px; }
+    .version-timeline { position: relative; padding-left: 20px; }
+    .version-timeline::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: var(--border);
+    }
+    .version-entry { position: relative; margin-bottom: 12px; padding-left: 16px; }
+    .version-entry::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid #fff;
+    }
+    .version-entry.current::before { background: var(--amber); }
+    .version-entry.latest::before { background: var(--green); }
+    .version-entry .ver-label { font-weight: 700; font-size: 0.85rem; }
+    .version-entry .ver-date { font-size: 0.75rem; color: var(--text-muted); margin-left: 8px; }
+    .version-entry .ver-notes { font-size: 0.82rem; color: #475569; margin-top: 4px; line-height: 1.5; }
+    .version-entry .ver-notes ul { margin: 4px 0 0 16px; }
+
+    .no-results { padding: 60px; text-align: center; color: var(--text-muted); }
+    .no-results .icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .container { padding: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Vector Web Components Dashboard</h1>
+    <p>Scan GitHub repos to audit @vector-web-components usage, versions, and available upgrades</p>
+  </div>
+
+  <div class="container">
+
+    <!-- Config -->
+    <div class="card config-card">
+      <div class="card-header">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        Configuration
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>GitHub Organization</label>
+            <div id="orgName" style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">VectorLearning</div>
+          </div>
+          <div class="form-group">
+            <label>GitHub Personal Access Token</label>
+            <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" />
+            <span class="help-text">Needs repo read access. Used only for in-browser GitHub API calls.</span>
+          </div>
+          <div class="form-group">
+            <label>Repos to Scan (comma-separated)</label>
+            <input type="text" id="repoList" value="ts-react, eval-pd-spa, lti-react" />
+            <span class="help-text">Leave empty to scan all org repos.</span>
+          </div>
+          <div class="form-group">
+            <label>Component Library Repo</label>
+            <div id="libRepo" style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">VectorLearning/vector-web-components</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="scanBtn" onclick="startScan()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Scan Repos
+          </button>
+          <button class="btn btn-ghost" onclick="clearResults()">Clear</button>
+          <span class="status-msg" id="statusText"></span>
+        </div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results (hidden until scan) -->
+    <div id="resultsSection" class="hidden">
+
+      <!-- Metrics -->
+      <div class="metrics" id="metricsRow">
+        <div class="metric-card" id="metricRepos"><div class="label">Repos Scanned</div><div class="value">0</div></div>
+        <div class="metric-card" id="metricComponents"><div class="label">Unique Components</div><div class="value">0</div></div>
+        <div class="metric-card green" id="metricUpToDate"><div class="label">Up to Date</div><div class="value">0</div><div class="detail">on latest version</div></div>
+        <div class="metric-card amber" id="metricOutdated"><div class="label">Upgrades Available</div><div class="value">0</div><div class="detail">behind latest version</div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header">Components per Repository</div>
+          <div class="card-body"><div class="chart-container"><canvas id="chartByRepo"></canvas></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">Version Freshness</div>
+          <div class="card-body"><div class="chart-container"><canvas id="chartFreshness"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card table-card">
+        <div class="card-header">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          Detailed Component Usage
+        </div>
+        <div class="table-toolbar">
+          <input class="filter-input" type="text" id="tableFilter" placeholder="Filter by repo or component..." oninput="filterTable()" />
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Repository</th>
+                <th>Component</th>
+                <th>Installed</th>
+                <th>Latest</th>
+                <th>Status</th>
+                <th>Type</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+        <div class="no-results hidden" id="noResults">
+          <div class="icon">&#128269;</div>
+          No @vector-web-components found in the scanned repos.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    let allResults = [];
+    let chartByRepo = null;
+    let chartFreshness = null;
+    const npmCache = {};
+
+    // ── Helpers ──
+    function setStatus(msg, isError) {
+      const el = document.getElementById('statusText');
+      el.textContent = msg;
+      el.className = 'status-msg' + (isError ? ' error' : '');
+    }
+
+    function setProgress(pct) {
+      const wrap = document.getElementById('progressWrap');
+      const bar = document.getElementById('progressBar');
+      wrap.classList.toggle('active', pct < 100);
+      bar.style.width = pct + '%';
+    }
+
+    function setLoading(on) {
+      const btn = document.getElementById('scanBtn');
+      btn.disabled = on;
+      btn.innerHTML = on
+        ? '<span class="spinner"></span> Scanning...'
+        : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Scan Repos';
+    }
+
+    function parseSemver(v) {
+      const clean = v.replace(/^[^\d]*/, '');
+      const parts = clean.split('.').map(p => parseInt(p, 10) || 0);
+      return { major: parts[0] || 0, minor: parts[1] || 0, patch: parts[2] || 0 };
+    }
+
+    function compareSemver(a, b) {
+      const va = parseSemver(a);
+      const vb = parseSemver(b);
+      if (va.major !== vb.major) return va.major - vb.major;
+      if (va.minor !== vb.minor) return va.minor - vb.minor;
+      return va.patch - vb.patch;
+    }
+
+    function semverDiffType(current, latest) {
+      const vc = parseSemver(current);
+      const vl = parseSemver(latest);
+      if (vl.major > vc.major) return 'major';
+      if (vl.minor > vc.minor) return 'minor';
+      if (vl.patch > vc.patch) return 'patch';
+      return 'current';
+    }
+
+    // ── GitHub API ──
+    async function ghFetch(url, token) {
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      if (token) headers['Authorization'] = 'token ' + token;
+      const resp = await fetch(url, { headers });
+      if (!resp.ok) {
+        if (resp.status === 404) return null;
+        throw new Error(`GitHub API ${resp.status}: ${resp.statusText}`);
+      }
+      return resp.json();
+    }
+
+    async function fetchFileContent(fullRepoPath, filePath, token) {
+      const url = `https://api.github.com/repos/${fullRepoPath}/contents/${filePath}`;
+      const data = await ghFetch(url, token);
+      if (!data || !data.content) return null;
+      try { return JSON.parse(atob(data.content)); }
+      catch { return null; }
+    }
+
+    function extractVectorComponents(pkgJson, depType) {
+      const deps = pkgJson[depType];
+      if (!deps) return [];
+      return Object.entries(deps)
+        .filter(([name]) => name.startsWith('@vector-web-components/'))
+        .map(([name, version]) => ({ name, version, depType }));
+    }
+
+    async function scanRepo(org, repo, token) {
+      const results = [];
+
+      const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token);
+      if (rootPkg) {
+        for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+          for (const c of extractVectorComponents(rootPkg, dt)) {
+            results.push({ repo, file: 'package.json', ...c });
+          }
+        }
+      }
+
+      for (const subdir of ['packages', 'apps', 'libs']) {
+        try {
+          const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token);
+          if (dirData && Array.isArray(dirData)) {
+            for (const item of dirData) {
+              if (item.type === 'dir') {
+                const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token);
+                if (subPkg) {
+                  for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+                    for (const c of extractVectorComponents(subPkg, dt)) {
+                      results.push({ repo, file: `${subdir}/${item.name}/package.json`, ...c });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch { /* subdir not found */ }
+      }
+
+      return results;
+    }
+
+    // ── Resolve latest versions from the Component Library GitHub Repo ──
+    // Strategy:
+    //   1. Fetch GitHub tags from the lib repo (they follow patterns like v1.2.3, component-name@1.2.3, etc.)
+    //   2. Scan the lib repo for packages/*/package.json to read each component's version directly
+    //   3. Fetch GitHub releases for changelogs
+    //   4. Fall back to npm registry if lib repo is not provided
+
+    async function resolveFromGitHubRepo(libRepoPath, token) {
+      // Returns { latestVersions: { '@vector-web-components/foo': '1.2.3', ... }, releases: [...] }
+      const result = { latestVersions: {}, releases: [], allTags: [] };
+
+      // 1. Fetch releases for changelogs
+      try {
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/releases?per_page=100&page=${page}`, token);
+          if (!data || data.length === 0) break;
+          result.releases.push(...data);
+          if (data.length < 100) break;
+          page++;
+        }
+      } catch { /* no releases */ }
+
+      // 2. Fetch tags to extract version numbers
+      try {
+        let page = 1;
+        while (true) {
+          const data = await ghFetch(`https://api.github.com/repos/${libRepoPath}/tags?per_page=100&page=${page}`, token);
+          if (!data || data.length === 0) break;
+          result.allTags.push(...data.map(t => t.name));
+          if (data.length < 100) break;
+          page++;
+        }
+      } catch { /* no tags */ }
+
+      // 3. Try to find component packages in the repo by scanning common monorepo dirs
+      for (const dir of ['packages', 'components', 'libs', 'modules', '']) {
+        try {
+          const basePath = dir || '.';
+          const dirData = await ghFetch(`https://api.github.com/repos/${libRepoPath}/contents/${dir}`, token);
+          if (!dirData || !Array.isArray(dirData)) continue;
+
+          for (const item of dirData) {
+            if (item.type !== 'dir') continue;
+            const pkg = await fetchFileContent(libRepoPath, `${dir ? dir + '/' : ''}${item.name}/package.json`, token);
+            if (pkg && pkg.name && pkg.name.startsWith('@vector-web-components/')) {
+              result.latestVersions[pkg.name] = pkg.version;
+            }
+          }
+
+          // If we found components, stop scanning other dirs
+          if (Object.keys(result.latestVersions).length > 0) break;
+        } catch { /* dir not found */ }
+      }
+
+      // 4. If no packages found via directory scan, try to parse tags
+      //    Tags may follow: @vector-web-components/button@1.2.3 or v1.2.3 (single-package repo)
+      if (Object.keys(result.latestVersions).length === 0 && result.allTags.length > 0) {
+        const tagVersions = {}; // { packageName: [versions...] }
+
+        for (const tag of result.allTags) {
+          // Pattern: @vector-web-components/name@version
+          const scopedMatch = tag.match(/@vector-web-components\/([^@]+)@(.+)/);
+          if (scopedMatch) {
+            const name = `@vector-web-components/${scopedMatch[1]}`;
+            if (!tagVersions[name]) tagVersions[name] = [];
+            tagVersions[name].push(scopedMatch[2]);
+            continue;
+          }
+          // Pattern: name@version (without scope)
+          const namedMatch = tag.match(/^([a-z][a-z0-9-]*)@(\d+\.\d+\.\d+.*)$/);
+          if (namedMatch) {
+            const name = `@vector-web-components/${namedMatch[1]}`;
+            if (!tagVersions[name]) tagVersions[name] = [];
+            tagVersions[name].push(namedMatch[2]);
+            continue;
+          }
+          // Pattern: v1.2.3 (single-package repo — collect under a generic key)
+          const simpleMatch = tag.match(/^v?(\d+\.\d+\.\d+.*)$/);
+          if (simpleMatch) {
+            if (!tagVersions['__root__']) tagVersions['__root__'] = [];
+            tagVersions['__root__'].push(simpleMatch[1]);
+          }
+        }
+
+        for (const [name, versions] of Object.entries(tagVersions)) {
+          versions.sort(compareSemver);
+          if (name === '__root__') continue; // We'll handle root separately
+          result.latestVersions[name] = versions[versions.length - 1];
+        }
+
+        // If only root tags found, check the repo's own package.json
+        if (Object.keys(result.latestVersions).length === 0 && tagVersions['__root__']) {
+          const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token);
+          if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
+            tagVersions['__root__'].sort(compareSemver);
+            result.latestVersions[rootPkg.name] = tagVersions['__root__'][tagVersions['__root__'].length - 1];
+          }
+        }
+      }
+
+      // 5. Last resort: check root package.json of lib repo
+      if (Object.keys(result.latestVersions).length === 0) {
+        const rootPkg = await fetchFileContent(libRepoPath, 'package.json', token);
+        if (rootPkg && rootPkg.name && rootPkg.name.startsWith('@vector-web-components/')) {
+          result.latestVersions[rootPkg.name] = rootPkg.version;
+        }
+      }
+
+      return result;
+    }
+
+    // Build a tag-based version timeline from all tags for a given component
+    function buildTagTimeline(componentName, allTags, releases) {
+      const versions = [];
+      const shortName = componentName.replace('@vector-web-components/', '');
+
+      for (const tag of allTags) {
+        let ver = null;
+        // @vector-web-components/name@version
+        const scopedMatch = tag.match(new RegExp(`@vector-web-components/${shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}@(.+)`));
+        if (scopedMatch) { ver = scopedMatch[1]; }
+        // name@version
+        if (!ver) {
+          const namedMatch = tag.match(new RegExp(`^${shortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}@(\\d+\\.\\d+\\.\\d+.*)$`));
+          if (namedMatch) ver = namedMatch[1];
+        }
+        // v1.2.3 (generic)
+        if (!ver) {
+          const simpleMatch = tag.match(/^v?(\d+\.\d+\.\d+.*)$/);
+          if (simpleMatch) ver = simpleMatch[1];
+        }
+        if (ver) {
+          // Find matching release for date/notes
+          const rel = releases.find(r => r.tag_name === tag);
+          versions.push({
+            version: ver,
+            date: rel ? rel.published_at || rel.created_at : null,
+            body: rel ? rel.body : null,
+            tag: tag
+          });
+        }
+      }
+
+      versions.sort((a, b) => compareSemver(a.version, b.version));
+      return versions;
+    }
+
+    // ── npm Registry (fallback) ──
+    async function fetchNpmLatest(packageName) {
+      if (npmCache[packageName] !== undefined) return npmCache[packageName];
+
+      try {
+        const url = `https://registry.npmjs.org/${packageName.replace('/', '%2F')}`;
+        const resp = await fetch(url);
+        if (!resp.ok) { npmCache[packageName] = null; return null; }
+        const data = await resp.json();
+        const latest = data['dist-tags'] && data['dist-tags'].latest;
+        const versions = [];
+        if (data.time) {
+          for (const [ver, dateStr] of Object.entries(data.time)) {
+            if (ver === 'created' || ver === 'modified') continue;
+            versions.push({ version: ver, date: dateStr });
+          }
+          versions.sort((a, b) => compareSemver(a.version, b.version));
+        }
+        const result = latest ? { latest, versions } : null;
+        npmCache[packageName] = result;
+        return result;
+      } catch {
+        npmCache[packageName] = null;
+        return null;
+      }
+    }
+
+    // ── Main Scan ──
+    async function startScan() {
+      const org = document.getElementById('orgName').textContent.trim();
+      const token = document.getElementById('ghToken').value.trim();
+      const repoInput = document.getElementById('repoList').value.trim();
+      const libRepo = document.getElementById('libRepo').textContent.trim();
+
+      if (!org) { setStatus('Please enter an organization name.', true); return; }
+      if (!token) { setStatus('Please enter a GitHub token.', true); return; }
+
+      const repoNames = repoInput ? repoInput.split(',').map(r => r.trim()).filter(Boolean) : [];
+      setLoading(true);
+      setStatus('');
+      setProgress(0);
+      document.getElementById('resultsSection').classList.add('hidden');
+
+      try {
+        let repos = repoNames;
+
+        if (repos.length === 0) {
+          setStatus('Fetching org repos...');
+          let page = 1;
+          repos = [];
+          while (true) {
+            const data = await ghFetch(`https://api.github.com/orgs/${org}/repos?per_page=100&page=${page}`, token);
+            if (!data || data.length === 0) break;
+            repos.push(...data.map(r => r.name));
+            if (data.length < 100) break;
+            page++;
+          }
+        }
+
+        // ── Phase 1: Scan consumer repos for component usage ──
+        allResults = [];
+        const errors = [];
+
+        for (let i = 0; i < repos.length; i++) {
+          setStatus(`Scanning ${repos[i]} (${i + 1}/${repos.length})...`);
+          setProgress(((i + 1) / repos.length) * 40);
+          try {
+            const results = await scanRepo(org, repos[i], token);
+            allResults.push(...results);
+          } catch (err) {
+            errors.push(`${repos[i]}: ${err.message}`);
+          }
+        }
+
+        // ── Phase 2: Resolve latest versions ──
+        const uniquePackages = [...new Set(allResults.map(r => r.name))];
+        let libData = null;
+
+        // Strategy A: Use the component library GitHub repo (preferred)
+        if (libRepo) {
+          setStatus('Scanning component library repo for latest versions...');
+          setProgress(45);
+          try {
+            libData = await resolveFromGitHubRepo(libRepo, token);
+          } catch (err) {
+            errors.push(`Library repo (${libRepo}): ${err.message}`);
+          }
+        }
+
+        // Apply version info to each result
+        for (let i = 0; i < uniquePackages.length; i++) {
+          const pkg = uniquePackages[i];
+          setStatus(`Resolving versions: ${pkg.replace('@vector-web-components/', '')} (${i + 1}/${uniquePackages.length})...`);
+          setProgress(50 + ((i + 1) / uniquePackages.length) * 35);
+
+          let latestVersion = null;
+          let versionTimeline = [];
+          let releases = [];
+
+          // Try GitHub lib repo first
+          if (libData && libData.latestVersions[pkg]) {
+            latestVersion = libData.latestVersions[pkg];
+            releases = libData.releases;
+            versionTimeline = buildTagTimeline(pkg, libData.allTags, libData.releases);
+          }
+
+          // Fallback: try npm registry
+          if (!latestVersion) {
+            const npmInfo = await fetchNpmLatest(pkg);
+            if (npmInfo) {
+              latestVersion = npmInfo.latest;
+              versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
+            }
+          }
+
+          // Apply to all results matching this package
+          for (const r of allResults.filter(r => r.name === pkg)) {
+            r.latestVersion = latestVersion;
+            r.allVersions = versionTimeline;
+            r.releases = releases;
+            r.diffType = latestVersion ? semverDiffType(r.version, latestVersion) : 'unknown';
+          }
+        }
+
+        setProgress(100);
+        renderDashboard(allResults, repos.length, errors);
+        setStatus(errors.length ? `Done with ${errors.length} error(s).` : 'Scan complete.');
+      } catch (err) {
+        setStatus('Error: ' + err.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ── Rendering ──
+    function renderDashboard(results, repoCount, errors) {
+      document.getElementById('resultsSection').classList.remove('hidden');
+
+      const uniqueComponents = new Set(results.map(r => r.name));
+      const upToDate = results.filter(r => r.diffType === 'current').length;
+      const outdated = results.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').length;
+      const unknown = results.filter(r => r.diffType === 'unknown').length;
+
+      // Metrics
+      document.querySelector('#metricRepos .value').textContent = repoCount;
+      document.querySelector('#metricComponents .value').textContent = uniqueComponents.size;
+      document.querySelector('#metricUpToDate .value').textContent = upToDate;
+      document.querySelector('#metricOutdated .value').textContent = outdated;
+      if (unknown > 0) {
+        document.querySelector('#metricOutdated .detail').textContent = `behind latest (${unknown} unknown)`;
+      } else {
+        document.querySelector('#metricOutdated .detail').textContent = 'behind latest version';
+      }
+
+      renderCharts(results);
+      renderTable(results);
+    }
+
+    const CHART_COLORS = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#6366f1','#14b8a6','#f97316'];
+
+    function renderCharts(results) {
+      if (chartByRepo) chartByRepo.destroy();
+      if (chartFreshness) chartFreshness.destroy();
+
+      // Chart 1: Components per repo (doughnut)
+      const repoMap = {};
+      for (const r of results) { repoMap[r.repo] = (repoMap[r.repo] || 0) + 1; }
+      const repoLabels = Object.keys(repoMap);
+      const repoCounts = Object.values(repoMap);
+
+      chartByRepo = new Chart(document.getElementById('chartByRepo'), {
+        type: 'doughnut',
+        data: {
+          labels: repoLabels,
+          datasets: [{
+            data: repoCounts,
+            backgroundColor: CHART_COLORS.slice(0, repoLabels.length),
+            borderWidth: 2, borderColor: '#fff', hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '55%',
+          plugins: {
+            legend: { position: 'right', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } },
+            tooltip: { callbacks: { label: ctx => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              return `${ctx.label}: ${ctx.raw} components (${((ctx.raw / total) * 100).toFixed(0)}%)`;
+            }}}
+          }
+        }
+      });
+
+      // Chart 2: Version freshness (horizontal stacked bar)
+      const componentMap = {};
+      for (const r of results) {
+        const short = r.name.replace('@vector-web-components/', '');
+        if (!componentMap[short]) componentMap[short] = { current: 0, minor: 0, major: 0, patch: 0, unknown: 0 };
+        componentMap[short][r.diffType] = (componentMap[short][r.diffType] || 0) + 1;
+      }
+      const compLabels = Object.keys(componentMap);
+
+      chartFreshness = new Chart(document.getElementById('chartFreshness'), {
+        type: 'bar',
+        data: {
+          labels: compLabels,
+          datasets: [
+            { label: 'Up to date', data: compLabels.map(c => componentMap[c].current), backgroundColor: '#22c55e' },
+            { label: 'Patch behind', data: compLabels.map(c => componentMap[c].patch), backgroundColor: '#3b82f6' },
+            { label: 'Minor behind', data: compLabels.map(c => componentMap[c].minor), backgroundColor: '#f59e0b' },
+            { label: 'Major behind', data: compLabels.map(c => componentMap[c].major), backgroundColor: '#ef4444' },
+            { label: 'Unknown', data: compLabels.map(c => componentMap[c].unknown), backgroundColor: '#cbd5e1' },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          scales: {
+            x: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
+            y: { stacked: true, grid: { display: false } }
+          },
+          plugins: { legend: { position: 'top', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+        }
+      });
+    }
+
+    function statusBadge(r) {
+      if (r.diffType === 'current') return '<span class="badge badge-green">&#10003; Up to date</span>';
+      if (r.diffType === 'patch') return '<span class="badge badge-green">Patch available</span>';
+      if (r.diffType === 'minor') return '<span class="badge badge-amber">Minor update</span>';
+      if (r.diffType === 'major') return '<span class="badge badge-red">Major update</span>';
+      return '<span class="badge badge-gray">Unknown</span>';
+    }
+
+    function renderTable(results) {
+      const body = document.getElementById('resultsBody');
+      const noResults = document.getElementById('noResults');
+      body.innerHTML = '';
+
+      if (results.length === 0) { noResults.classList.remove('hidden'); return; }
+      noResults.classList.add('hidden');
+
+      // Sort: outdated first (major > minor > patch > unknown > current)
+      results.sort((a, b) => {
+        const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
+        const da = diffOrder[a.diffType] ?? 5;
+        const db = diffOrder[b.diffType] ?? 5;
+        if (da !== db) return da - db;
+        return a.repo.localeCompare(b.repo) || a.name.localeCompare(b.name);
+      });
+
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        const shortName = r.name.replace('@vector-web-components/', '');
+        // Show "View changes" for anything that isn't confirmed current
+        const canExpand = r.diffType !== 'current';
+
+        const tr = document.createElement('tr');
+        tr.dataset.index = i;
+        tr.innerHTML = `
+          <td><strong>${r.repo}</strong><br><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
+          <td>${shortName}</td>
+          <td><span class="badge badge-gray">${r.version}</span></td>
+          <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' : '<span class="badge badge-gray">N/A</span>'}</td>
+          <td>${statusBadge(r)}</td>
+          <td><span class="dep-type">${r.depType}</span></td>
+          <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + i + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
+        `;
+        body.appendChild(tr);
+      }
+    }
+
+    function toggleDetail(idx, btn) {
+      const existing = document.getElementById('detail-' + idx);
+      if (existing) {
+        existing.remove();
+        btn.closest('tr').classList.remove('expanded');
+        btn.innerHTML = 'View changes &#9662;';
+        return;
+      }
+
+      btn.closest('tr').classList.add('expanded');
+      btn.innerHTML = 'Hide &#9652;';
+
+      const r = allResults[idx];
+      const detailRow = document.createElement('tr');
+      detailRow.className = 'detail-row';
+      detailRow.id = 'detail-' + idx;
+
+      let timelineHTML = '';
+
+      if (r.allVersions && r.allVersions.length > 0 && r.latestVersion) {
+        // Get versions between current and latest
+        const relevantVersions = r.allVersions.filter(v =>
+          compareSemver(v.version, r.version) > 0 && compareSemver(v.version, r.latestVersion) <= 0
+        );
+
+        // Also build a release map for body text from GitHub releases
+        const releaseMap = {};
+        if (r.releases && r.releases.length > 0) {
+          for (const rel of r.releases) {
+            // Match tag to version: v1.2.3 -> 1.2.3, comp@1.2.3 -> 1.2.3
+            const tag = rel.tag_name;
+            const verMatch = tag.match(/(\d+\.\d+\.\d+[^\s]*)/);
+            if (verMatch) releaseMap[verMatch[1]] = rel.body || '';
+          }
+        }
+
+        // Merge release body from releases into timeline entries
+        for (const v of relevantVersions) {
+          if (!v.body && releaseMap[v.version]) {
+            v.body = releaseMap[v.version];
+          }
+        }
+
+        const displayVersions = relevantVersions.slice(-10);
+
+        timelineHTML = '<div class="version-timeline">';
+
+        // Current (installed) version
+        timelineHTML += `<div class="version-entry current">
+          <span class="ver-label">${r.version}</span> <span class="ver-date">(installed)</span>
+        </div>`;
+
+        for (const v of displayVersions) {
+          const isLatest = v.version === r.latestVersion;
+          const date = v.date ? new Date(v.date).toLocaleDateString() : '';
+
+          let notes = '';
+          if (v.body) {
+            notes = v.body
+              .split('\n')
+              .filter(l => l.trim())
+              .slice(0, 10)
+              .map(l => {
+                l = l.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (l.match(/^[\*\-]\s/)) return '<li>' + l.replace(/^[\*\-]\s/, '') + '</li>';
+                if (l.match(/^#+\s/)) return '<strong>' + l.replace(/^#+\s/, '') + '</strong>';
+                return l;
+              })
+              .join('');
+            if (notes.includes('<li>')) notes = '<ul>' + notes + '</ul>';
+          }
+
+          timelineHTML += `<div class="version-entry ${isLatest ? 'latest' : ''}">
+            <span class="ver-label">${v.version}</span>
+            ${isLatest ? ' <span class="badge badge-green" style="font-size:0.7rem">LATEST</span>' : ''}
+            <span class="ver-date">${date}</span>
+            ${notes ? '<div class="ver-notes">' + notes + '</div>' : ''}
+          </div>`;
+        }
+
+        if (relevantVersions.length > 10) {
+          timelineHTML += `<div style="padding-left:16px;font-size:0.8rem;color:var(--text-muted);">...and ${relevantVersions.length - 10} more versions</div>`;
+        }
+
+        timelineHTML += '</div>';
+      }
+
+      // Header label
+      let headerHTML = '';
+      if (r.latestVersion && r.diffType !== 'unknown') {
+        const diffLabel = r.diffType === 'major' ? 'Major version upgrade' : r.diffType === 'minor' ? 'Minor version upgrade' : 'Patch upgrade';
+        const missedCount = r.allVersions ? r.allVersions.filter(v => compareSemver(v.version, r.version) > 0 && compareSemver(v.version, r.latestVersion) <= 0).length : 0;
+        headerHTML = `<h4>${diffLabel}: ${r.version} &rarr; ${r.latestVersion}${missedCount ? ' (' + missedCount + ' versions behind)' : ''}</h4>`;
+      } else {
+        headerHTML = `<h4>Version details for ${r.name.replace('@vector-web-components/', '')}</h4>`;
+      }
+
+      // Fallback message when no data is available
+      const fallbackHTML = `
+        <div style="padding:12px 0;">
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:8px;">
+            Could not resolve version history. The package may be on a private npm registry.
+          </p>
+          <p style="font-size:0.85rem;">
+            <strong>To enable upgrade detection:</strong> enter the component library's GitHub repo path
+            (e.g. <code>my-org/vector-web-components</code>) in the <em>Component Library Repo</em> field above and re-scan.
+          </p>
+        </div>
+      `;
+
+      detailRow.innerHTML = `<td colspan="7">
+        <div class="detail-panel">
+          ${headerHTML}
+          ${timelineHTML || fallbackHTML}
+        </div>
+      </td>`;
+
+      btn.closest('tr').after(detailRow);
+    }
+
+    function filterTable() {
+      const q = document.getElementById('tableFilter').value.toLowerCase();
+      const rows = document.querySelectorAll('#resultsBody tr:not(.detail-row)');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    function clearResults() {
+      document.getElementById('resultsSection').classList.add('hidden');
+      document.getElementById('resultsBody').innerHTML = '';
+      setStatus('');
+      setProgress(100);
+      allResults = [];
+    }
+  </script>
+</body>
+</html>
