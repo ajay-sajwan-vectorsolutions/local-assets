@@ -1349,6 +1349,62 @@
     .cve-severity-high { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
     .cve-severity-medium { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
     .cve-severity-low { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+    /* ── Tab Navigation ── */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 40px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .tab-btn {
+      padding: 12px 20px;
+      border: none;
+      background: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+      background: var(--surface-alt);
+    }
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--red);
+      color: white;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      min-width: 18px;
+      line-height: 1.4;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    @media (max-width: 900px) {
+      .tab-nav { padding: 0 16px; }
+      .tab-btn { padding: 10px 14px; font-size: 0.82rem; }
+    }
   </style>
 </head>
 
@@ -1359,9 +1415,17 @@
     <p>Audit dependency health across all org repos — versions, CVEs, and upgrade effort</p>
   </div>
 
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="scan">&#9881; Scan</button>
+    <button class="tab-btn" data-tab="overview">&#128202; Overview</button>
+    <button class="tab-btn" data-tab="details">&#128269; Details</button>
+    <button class="tab-btn" data-tab="health">&#10084; Health <span class="tab-badge hidden" id="healthTabBadge"></span></button>
+  </nav>
+
   <div class="container">
 
-    <!-- Config -->
+    <!-- TAB: Scan -->
+    <div class="tab-panel active" id="tab-scan">
     <div class="card config-card">
       <div class="card-header">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -1437,6 +1501,10 @@
               <label class="ecosystem-check-label"><input type="checkbox" id="ecoNuget" onchange="updateEcosystems()"> NuGet (.csproj)</label>
               <label class="ecosystem-check-label"><input type="checkbox" id="ecoPython" onchange="updateEcosystems()"> Python (requirements.txt)</label>
               <label class="ecosystem-check-label"><input type="checkbox" id="ecoRuby" onchange="updateEcosystems()"> Ruby (Gemfile.lock)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoColdfusion" onchange="updateEcosystems()"> ColdFusion (box.json)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoComposer" onchange="updateEcosystems()"> PHP/Composer (composer.json)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoDart" onchange="updateEcosystems()"> Dart/Flutter (pubspec.yaml)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoGradle" onchange="updateEcosystems()"> Gradle (build.gradle)</label>
             </div>
           </div>
         </div>
@@ -1484,9 +1552,10 @@
         </div>
       </div>
     </div>
+    </div><!-- end tab-scan -->
 
-    <!-- Results (hidden until scan) -->
-    <div id="resultsSection" class="hidden">
+    <!-- TAB: Overview -->
+    <div class="tab-panel" id="tab-overview">
 
       <!-- Metrics -->
       <div class="metrics" id="metricsRow">
@@ -1545,7 +1614,10 @@
         </div>
       </div>
 
-      <!-- Table -->
+    </div><!-- end tab-overview -->
+
+    <!-- TAB: Details -->
+    <div class="tab-panel" id="tab-details">
       <div class="card table-card">
         <div class="card-header">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -1556,8 +1628,6 @@
             <div class="view-toggle">
               <button class="view-toggle-btn active" id="viewByRepo" onclick="setPivotView('repo')">By Repo</button>
               <button class="view-toggle-btn" id="viewByComponent" onclick="setPivotView('component')">By Component</button>
-              <!-- H6: Health Summary view toggle -->
-              <button class="view-toggle-btn" id="viewHealth" onclick="setPivotView('health')">Health Summary</button>
             </div>
             <button class="export-btn" onclick="exportCSV()">&#8659; CSV</button>
             <button class="export-btn" onclick="exportJSON()">&#8659; JSON</button>
@@ -1580,6 +1650,10 @@
             <option value="nuget">NuGet</option>
             <option value="python">Python</option>
             <option value="ruby">Ruby</option>
+            <option value="coldfusion">ColdFusion</option>
+            <option value="composer">Composer</option>
+            <option value="dart">Dart</option>
+            <option value="gradle">Gradle</option>
           </select>
           <select class="toolbar-select" id="filterStatus" onchange="filterTable()">
             <option value="">All Statuses</option>
@@ -1627,8 +1701,40 @@
           No dependencies found in the scanned repos.
         </div>
       </div>
+    </div><!-- end tab-details -->
 
-    </div>
+    <!-- TAB: Health -->
+    <div class="tab-panel" id="tab-health">
+      <div class="card" style="overflow:hidden;">
+        <div class="card-header">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+          Health Summary
+        </div>
+        <div style="overflow-x:clip;">
+          <table>
+            <thead>
+              <tr>
+                <th>Repo</th>
+                <th>Product</th>
+                <th>Freshness</th>
+                <th>CVEs</th>
+                <th>Ecosystems</th>
+                <th>Last Commit</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="healthBody"></tbody>
+          </table>
+        </div>
+        <div class="no-results hidden" id="healthNoResults">
+          <div class="icon">&#9829;</div>
+          Run a scan first to see the health summary.
+        </div>
+      </div>
+    </div><!-- end tab-health -->
+
   </div>
 
   <!-- PAT Help Modal -->
@@ -1802,6 +1908,23 @@
       console.error = _origConsoleError;
       console.warn = _origConsoleWarn;
     }
+
+    // ── Tab Navigation ──
+    let currentTab = 'scan';
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `tab-${tabId}`));
+      currentTab = tabId;
+      if (tabId === 'health' && allResults.length > 0) renderHealthTable();
+      try { localStorage.setItem('vwc-active-tab', tabId); } catch(e) {}
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn =>
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab))
+    );
+
+    // Tab always starts on Scan (results aren't persisted across page loads)
 
     // ── State ──
     let allResults = [];
@@ -2392,6 +2515,120 @@
       } catch { return null; }
     }
 
+    // ── New Ecosystem Parsers ──
+
+    // ColdFusion: box.json
+    function extractColdFusionDeps(jsonText, patterns) {
+      try {
+        const pkg = JSON.parse(jsonText);
+        const deps = pkg.dependencies || {};
+        return Object.entries(deps)
+          .filter(([name]) => matchesPatterns(name, patterns))
+          .map(([name, version]) => ({ name, version: String(version).replace(/^[^~]?[^\d]*/, '') || 'unknown', depType: 'dependency', ecosystem: 'coldfusion' }));
+      } catch { return []; }
+    }
+
+    async function resolveLatestForgeBox(name, signal) {
+      try {
+        const url = `https://www.forgebox.io/api/v1/entry/${encodeURIComponent(name)}`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data?.data?.version || null;
+      } catch { return null; }
+    }
+
+    // PHP/Composer: composer.json
+    function extractComposerDeps(jsonText, patterns) {
+      try {
+        const pkg = JSON.parse(jsonText);
+        const result = [];
+        for (const depType of ['require', 'require-dev']) {
+          const deps = pkg[depType] || {};
+          for (const [name, version] of Object.entries(deps)) {
+            if (name === 'php' || name.startsWith('ext-')) continue;
+            if (!matchesPatterns(name, patterns)) continue;
+            result.push({ name, version: String(version), depType: depType === 'require-dev' ? 'devDependency' : 'dependency', ecosystem: 'composer' });
+          }
+        }
+        return result;
+      } catch { return []; }
+    }
+
+    async function resolveLatestPackagist(name, signal) {
+      try {
+        const [vendor, pkg] = name.split('/');
+        if (!vendor || !pkg) return null;
+        const url = `https://packagist.org/packages/${encodeURIComponent(vendor)}/${encodeURIComponent(pkg)}.json`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        const versions = Object.keys(data?.package?.versions || {});
+        const stable = versions.filter(v => /^\d+\.\d+\.\d+$/.test(v)).sort((a, b) => compareSemver(b, a));
+        return stable[0] || null;
+      } catch { return null; }
+    }
+
+    // Dart/Flutter: pubspec.yaml
+    function extractDartDeps(yamlText, patterns) {
+      const deps = [];
+      let inDeps = false;
+      let inDevDeps = false;
+      for (const line of yamlText.split('\n')) {
+        if (/^dependencies\s*:/.test(line)) { inDeps = true; inDevDeps = false; continue; }
+        if (/^dev_dependencies\s*:/.test(line)) { inDevDeps = true; inDeps = false; continue; }
+        if (/^\S/.test(line) && !/^  /.test(line)) { inDeps = false; inDevDeps = false; continue; }
+        if (!inDeps && !inDevDeps) continue;
+        const m = line.match(/^  ([a-zA-Z0-9_]+)\s*:\s*(.+)$/);
+        if (!m) continue;
+        const name = m[1];
+        const rawVer = m[2].trim();
+        if (name === 'flutter' || name === 'sdk') continue;
+        if (!matchesPatterns(name, patterns)) continue;
+        const vMatch = rawVer.match(/[\^~]?(\d[\d.]*)/);
+        deps.push({ name, version: vMatch ? vMatch[1] : rawVer, depType: inDevDeps ? 'devDependency' : 'dependency', ecosystem: 'dart' });
+      }
+      return deps;
+    }
+
+    async function resolveLatestPubDev(name, signal) {
+      try {
+        const url = `https://pub.dev/api/packages/${encodeURIComponent(name)}`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data?.latest?.version || null;
+      } catch { return null; }
+    }
+
+    // Gradle: build.gradle / build.gradle.kts
+    function extractGradleDeps(gradleText, patterns) {
+      const deps = [];
+      const regex = /(?:implementation|api|compileOnly|runtimeOnly|testImplementation|annotationProcessor)\s*[\(\s]["']([^"']+):([^"']+):([^"']+)["']/g;
+      let match;
+      while ((match = regex.exec(gradleText)) !== null) {
+        const name = `${match[1]}:${match[2]}`;
+        const version = match[3];
+        const depType = match[0].split(/[\s(]/)[0];
+        if (!matchesPatterns(name, patterns)) continue;
+        deps.push({ name, version, depType, ecosystem: 'gradle' });
+      }
+      return deps;
+    }
+
+    // ── ECOSYSTEMS Registry ──
+    const ECOSYSTEMS = {
+      npm:        { label: 'npm',        phase0: 'filename:package.json' },
+      maven:      { label: 'Maven',      phase0: 'filename:pom.xml',          resolve: resolveLatestMaven },
+      nuget:      { label: 'NuGet',      phase0: 'filename:.csproj',          resolve: resolveLatestNuget },
+      python:     { label: 'Python',     phase0: 'filename:requirements.txt',  resolve: resolveLatestPypi },
+      ruby:       { label: 'Ruby',       phase0: 'filename:Gemfile.lock',      resolve: resolveLatestRubyGems },
+      coldfusion: { label: 'ColdFusion', phase0: 'filename:box.json',          resolve: resolveLatestForgeBox },
+      composer:   { label: 'Composer',   phase0: 'filename:composer.json',     resolve: resolveLatestPackagist },
+      dart:       { label: 'Dart',       phase0: 'filename:pubspec.yaml',      resolve: resolveLatestPubDev },
+      gradle:     { label: 'Gradle',     phase0: 'filename:build.gradle',      resolve: resolveLatestMaven },
+    };
+
     // ── J9: CVE vulnerability range checker ──
     function isVersionVulnerable(installedVersion, rangeStr) {
       if (!rangeStr || !installedVersion || installedVersion === 'unknown') return false;
@@ -2412,7 +2649,7 @@
 
     // ── updateEcosystems: validates at least one ecosystem is checked ──
     function updateEcosystems() {
-      const anyChecked = ['ecoNpm','ecoMaven','ecoNuget','ecoPython','ecoRuby']
+      const anyChecked = ['ecoNpm','ecoMaven','ecoNuget','ecoPython','ecoRuby','ecoColdfusion','ecoComposer','ecoDart','ecoGradle']
         .some(id => document.getElementById(id).checked);
       document.getElementById('scanBtn').disabled = !anyChecked;
     }
@@ -2493,6 +2730,40 @@
         const lockRaw = await fetchRawFileContent(`${org}/${repo}`, 'Gemfile.lock', token, signal);
         if (lockRaw) {
           for (const c of extractRubyDeps(lockRaw)) results.push({ repo, file: 'Gemfile.lock', ...c });
+        }
+      }
+
+      // ColdFusion
+      if (ecosystems.has('coldfusion')) {
+        const boxRaw = await fetchRawFileContent(`${org}/${repo}`, 'box.json', token, signal);
+        if (boxRaw) {
+          for (const c of extractColdFusionDeps(boxRaw, patterns)) results.push({ repo, file: 'box.json', ...c });
+        }
+      }
+
+      // PHP/Composer
+      if (ecosystems.has('composer')) {
+        const compRaw = await fetchRawFileContent(`${org}/${repo}`, 'composer.json', token, signal);
+        if (compRaw) {
+          for (const c of extractComposerDeps(compRaw, patterns)) results.push({ repo, file: 'composer.json', ...c });
+        }
+      }
+
+      // Dart/Flutter
+      if (ecosystems.has('dart')) {
+        const pubRaw = await fetchRawFileContent(`${org}/${repo}`, 'pubspec.yaml', token, signal);
+        if (pubRaw) {
+          for (const c of extractDartDeps(pubRaw, patterns)) results.push({ repo, file: 'pubspec.yaml', ...c });
+        }
+      }
+
+      // Gradle
+      if (ecosystems.has('gradle')) {
+        for (const gradleFile of ['build.gradle', 'build.gradle.kts']) {
+          const gRaw = await fetchRawFileContent(`${org}/${repo}`, gradleFile, token, signal);
+          if (gRaw) {
+            for (const c of extractGradleDeps(gRaw, patterns)) results.push({ repo, file: gradleFile, ...c });
+          }
         }
       }
 
@@ -2695,11 +2966,15 @@
         .split(',').map(s => s.trim()).filter(Boolean);
       const isWildcard = rawPatterns.length === 0 || rawPatterns.includes('*');
       const ecosystems = new Set([
-        ...(document.getElementById('ecoNpm').checked    ? ['npm']    : []),
-        ...(document.getElementById('ecoMaven').checked  ? ['maven']  : []),
-        ...(document.getElementById('ecoNuget').checked  ? ['nuget']  : []),
-        ...(document.getElementById('ecoPython').checked ? ['python'] : []),
-        ...(document.getElementById('ecoRuby').checked   ? ['ruby']   : []),
+        ...(document.getElementById('ecoNpm').checked        ? ['npm']        : []),
+        ...(document.getElementById('ecoMaven').checked      ? ['maven']      : []),
+        ...(document.getElementById('ecoNuget').checked      ? ['nuget']      : []),
+        ...(document.getElementById('ecoPython').checked     ? ['python']     : []),
+        ...(document.getElementById('ecoRuby').checked       ? ['ruby']       : []),
+        ...(document.getElementById('ecoColdfusion').checked ? ['coldfusion'] : []),
+        ...(document.getElementById('ecoComposer').checked   ? ['composer']   : []),
+        ...(document.getElementById('ecoDart').checked       ? ['dart']       : []),
+        ...(document.getElementById('ecoGradle').checked     ? ['gradle']     : []),
       ]);
       const runCVE = document.getElementById('enableCVECheck').checked;
 
@@ -2716,7 +2991,6 @@
       suppressConsoleErrors();
       setStatus('');
       setProgress(0);
-      document.getElementById('resultsSection').classList.add('hidden');
 
       try {
 
@@ -2734,10 +3008,11 @@
           } else if (ecosystems.has('npm')) {
             queries.push(`filename:package.json org:${encodeURIComponent(org)}`);
           }
-          if (ecosystems.has('maven'))  queries.push(`filename:pom.xml org:${encodeURIComponent(org)}`);
-          if (ecosystems.has('nuget'))  queries.push(`filename:.csproj org:${encodeURIComponent(org)}`);
-          if (ecosystems.has('python')) queries.push(`filename:requirements.txt org:${encodeURIComponent(org)}`);
-          if (ecosystems.has('ruby'))   queries.push(`filename:Gemfile.lock org:${encodeURIComponent(org)}`);
+          // Use ECOSYSTEMS registry for phase 0 (non-npm ecosystems)
+          for (const [ecoId, eco] of Object.entries(ECOSYSTEMS)) {
+            if (ecoId === 'npm') continue; // handled above
+            if (ecosystems.has(ecoId)) queries.push(`${eco.phase0} org:${encodeURIComponent(org)}`);
+          }
 
           const codeSearchHits = new Set();
           const searchResults = await Promise.allSettled(queries.map(async q => {
@@ -2838,10 +3113,10 @@
                 versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
               }
             }
-          } else if (ecosystem === 'maven')  { latestVersion = await resolveLatestMaven(name, signal); }
-            else if (ecosystem === 'nuget')  { latestVersion = await resolveLatestNuget(name, signal); }
-            else if (ecosystem === 'python') { latestVersion = await resolveLatestPypi(name, signal); }
-            else if (ecosystem === 'ruby')   { latestVersion = await resolveLatestRubyGems(name, signal); }
+          } else {
+            const eco = ECOSYSTEMS[ecosystem];
+            if (eco?.resolve) latestVersion = await eco.resolve(name, signal);
+          }
 
           for (const r of allResults.filter(r => r.ecosystem === ecosystem && r.name === name)) {
             r.latestVersion = latestVersion;
@@ -2887,7 +3162,7 @@
 
     // ── R1: CVE / Security Advisory checker ──
     async function checkSecurityAdvisories(results, token, signal) {
-      const ecoMap = { npm: 'npm', maven: 'maven', nuget: 'nuget', python: 'pip', ruby: 'rubygems' };
+      const ecoMap = { npm: 'npm', maven: 'maven', nuget: 'nuget', python: 'pip', ruby: 'rubygems', composer: 'composer', dart: 'pub', gradle: 'maven' };
       const seenPkgs = new Set();
       const uniquePkgs = [];
       for (const r of results) {
@@ -2927,8 +3202,6 @@
 
     // ── Rendering ──
     function renderDashboard(results, repoCount, errors) {
-      document.getElementById('resultsSection').classList.remove('hidden');
-
       const uniqueComponents = new Set(results.map(r => r.name));
       const upToDate = results.filter(r => r.diffType === 'current').length;
       const outdated = results.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').length;
@@ -2940,9 +3213,16 @@
       document.querySelector('#metricComponents .value').textContent = uniqueComponents.size;
       document.querySelector('#metricUpToDate .value').textContent = upToDate;
       document.querySelector('#metricOutdated .value').textContent = outdated;
-      // R3: CVE metric card
+      // R3: CVE metric card + Health tab badge
       document.querySelector('#metricCVEs .value').textContent = vulnCount;
       document.getElementById('metricCVEs').classList.toggle('hidden', vulnCount === 0);
+      const healthBadge = document.getElementById('healthTabBadge');
+      if (vulnCount > 0) {
+        healthBadge.textContent = vulnCount;
+        healthBadge.classList.remove('hidden');
+      } else {
+        healthBadge.classList.add('hidden');
+      }
       if (unknown > 0) {
         document.querySelector('#metricOutdated .detail').textContent = `behind latest (${unknown} unknown)`;
       } else {
@@ -2961,6 +3241,9 @@
       document.getElementById('filterStatus').value = '';
       populateResultFilters(results);
       renderTable(results);
+
+      // Auto-navigate to Overview after scan completes
+      switchTab('overview');
     }
 
     const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#14b8a6', '#f97316'];
@@ -3004,7 +3287,7 @@
             document.getElementById('tableFilter').value = repo;
             document.getElementById('filterStatus').value = '';
             filterTable();
-            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            switchTab('details');
           }
         }
       });
@@ -3045,7 +3328,7 @@
             document.getElementById('tableFilter').value = `@vector-web-components/${compShort}`;
             document.getElementById('filterStatus').value = status;
             filterTable();
-            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            switchTab('details');
           }
         }
       });
@@ -3390,9 +3673,11 @@
       downloadFile('dep-health-audit.json', 'application/json', JSON.stringify(data, null, 2));
     }
 
-    // ── R7: Health Summary view ──
+    // ── R7: Health Summary (rendered into #tab-health panel) ──
     async function renderHealthTable() {
-      const body = document.getElementById('resultsBody');
+      const body = document.getElementById('healthBody');
+      const noResults = document.getElementById('healthNoResults');
+      noResults.classList.add('hidden');
       body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">Loading health summary...</td></tr>';
 
       const repoStats = {};
@@ -3428,6 +3713,11 @@
         return fa - fb;
       });
 
+      if (sorted.length === 0) {
+        noResults.classList.remove('hidden');
+        return;
+      }
+
       for (const repo of sorted) {
         const s = repoStats[repo];
         const freshness = s.total > 0 ? Math.round((s.upToDate / s.total) * 100) : 0;
@@ -3454,40 +3744,23 @@
       }
     }
 
-    // ── R8: setPivotView with health mode ──
+    // ── R8: setPivotView (repo | component only — health is now its own tab) ──
     function setPivotView(view) {
       pivotView = view;
       document.getElementById('viewByRepo').classList.toggle('active', view === 'repo');
       document.getElementById('viewByComponent').classList.toggle('active', view === 'component');
-      document.getElementById('viewHealth').classList.toggle('active', view === 'health');
 
-      const toolbar = document.querySelector('.table-toolbar');
-      const pagination = document.getElementById('paginationToolbar');
+      document.getElementById('thFile').textContent = view === 'repo' ? 'File' : 'Repo / File';
+      document.getElementById('thPackage').textContent = 'Package';
+      document.getElementById('thInstalled').textContent = 'Installed';
+      document.getElementById('thLatest').textContent = 'Latest';
+      document.getElementById('thStatus').textContent = 'Status';
+      document.getElementById('thType').textContent = 'Type';
+      document.getElementById('thDetails').textContent = 'Details';
 
-      if (view === 'health') {
-        toolbar.classList.add('hidden');
-        pagination.classList.add('hidden');
-        document.getElementById('thFile').textContent = 'Repo';
-        document.getElementById('thPackage').textContent = 'Product';
-        document.getElementById('thInstalled').textContent = 'Freshness';
-        document.getElementById('thLatest').textContent = 'CVEs';
-        document.getElementById('thStatus').textContent = 'Ecosystems';
-        document.getElementById('thType').textContent = 'Last Commit';
-        document.getElementById('thDetails').textContent = '';
-        if (allResults.length > 0) renderHealthTable();
-      } else {
-        toolbar.classList.remove('hidden');
-        document.getElementById('thFile').textContent = view === 'repo' ? 'File' : 'Repo / File';
-        document.getElementById('thPackage').textContent = 'Package';
-        document.getElementById('thInstalled').textContent = 'Installed';
-        document.getElementById('thLatest').textContent = 'Latest';
-        document.getElementById('thStatus').textContent = 'Status';
-        document.getElementById('thType').textContent = 'Type';
-        document.getElementById('thDetails').textContent = 'Details';
-        if (filteredResults.length > 0) {
-          currentPage = 1;
-          renderTable(filteredResults);
-        }
+      if (filteredResults.length > 0) {
+        currentPage = 1;
+        renderTable(filteredResults);
       }
     }
 
@@ -3608,13 +3881,16 @@
     }
 
     function clearResults() {
-      document.getElementById('resultsSection').classList.add('hidden');
       document.getElementById('resultsBody').innerHTML = '';
+      document.getElementById('healthBody').innerHTML = '';
+      document.getElementById('healthNoResults').classList.remove('hidden');
+      document.getElementById('healthTabBadge').classList.add('hidden');
       setStatus('');
       setProgress(100);
       allResults = [];
       filteredResults = [];
       currentPage = 1;
+      switchTab('scan');
     }
   </script>
 </body>
