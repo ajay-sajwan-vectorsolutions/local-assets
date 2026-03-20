@@ -1,7 +1,7 @@
 # Vector Web Components Dashboard
 
 ## What This Is
-A single-file (`index.html`) GitHub Pages dashboard that audits `@vector-web-components` usage across repos in the VectorLearning GitHub org. Built with pure HTML/CSS/JS + Chart.js (CDN).
+A single-file (`index.html`) GitHub Pages dashboard that audits dependency health across all repos in the VectorLearning GitHub org. Supports npm, Maven, NuGet, Python, and Ruby ecosystems with configurable package scope, CVE scanning via GitHub Security Advisory DB, and a repo Health Summary view. Built with pure HTML/CSS/JS + Chart.js (CDN).
 
 ## File Structure
 - `index.html` — the entire app (CSS + HTML + JS embedded, ~1500 lines)

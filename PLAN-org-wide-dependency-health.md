@@ -35,17 +35,17 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | Category | Total Items | Done | In Progress | Pending |
 |---|---|---|---|---|
-| CSS | 5 | 0 | 0 | 5 |
-| HTML — Config Card | 3 | 0 | 0 | 3 |
-| HTML — Results Area | 5 | 0 | 0 | 5 |
-| JS — Helpers & Parsers | 9 | 0 | 0 | 9 |
-| JS — Scan Logic (startScan) | 5 | 0 | 0 | 5 |
-| JS — Rendering | 8 | 0 | 0 | 8 |
-| JS — Filtering & Export | 3 | 0 | 0 | 3 |
-| Other | 2 | 0 | 0 | 2 |
-| **TOTAL** | **40** | **0** | **0** | **40** |
+| CSS | 5 | 5 | 0 | 0 |
+| HTML — Config Card | 3 | 3 | 0 | 0 |
+| HTML — Results Area | 5 | 5 | 0 | 0 |
+| JS — Helpers & Parsers | 9 | 9 | 0 | 0 |
+| JS — Scan Logic (startScan) | 5 | 5 | 0 | 0 |
+| JS — Rendering | 8 | 8 | 0 | 0 |
+| JS — Filtering & Export | 3 | 3 | 0 | 0 |
+| Other | 2 | 2 | 0 | 0 |
+| **TOTAL** | **40** | **40** | **0** | **0** |
 
-**Overall completion: 0 / 40 (0%)**
+**Overall completion: 40 / 40 (100%)**
 
 ---
 
@@ -53,13 +53,13 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Location in file | Status |
 |---|---|---|---|
-| C1 | Add `.badge-dark-red` (VULNERABLE badge) | Before `</style>` | pending |
-| C2 | Add `.ecosystem-badge` (Type column pill) | Before `</style>` | pending |
-| C3 | Add `.freshness-bar` / `.freshness-fill` (Health Summary) | Before `</style>` | pending |
-| C4 | Add `.ecosystems-group` / `.ecosystem-check-label` (config checkboxes) | Before `</style>` | pending |
-| C5 | Add `.cve-list` / `.cve-item` / `.cve-severity-*` (CVE detail panel) | Before `</style>` | pending |
+| C1 | Add `.badge-dark-red` (VULNERABLE badge) | Before `</style>` | done |
+| C2 | Add `.ecosystem-badge` (Type column pill) | Before `</style>` | done |
+| C3 | Add `.freshness-bar` / `.freshness-fill` (Health Summary) | Before `</style>` | done |
+| C4 | Add `.ecosystems-group` / `.ecosystem-check-label` (config checkboxes) | Before `</style>` | done |
+| C5 | Add `.cve-list` / `.cve-item` / `.cve-severity-*` (CVE detail panel) | Before `</style>` | done |
 
-**CSS sub-total: 0 / 5**
+**CSS sub-total: 5 / 5**
 
 ---
 
@@ -67,11 +67,11 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Location in file | Status |
 |---|---|---|---|
-| H1 | Add "Packages to Audit" text input (`#packageScopeInput`) | After Component Library Repo field | pending |
-| H2 | Add Ecosystems checkboxes (`#ecoNpm`, `#ecoMaven`, `#ecoNuget`, `#ecoPython`, `#ecoRuby`) | After Packages to Audit field | pending |
-| H3 | Add "Check for CVEs" checkbox (`#enableCVECheck`) | Between `.form-grid` close and `.actions` | pending |
+| H1 | Add "Packages to Audit" text input (`#packageScopeInput`) | After Component Library Repo field | done |
+| H2 | Add Ecosystems checkboxes (`#ecoNpm`, `#ecoMaven`, `#ecoNuget`, `#ecoPython`, `#ecoRuby`) | After Packages to Audit field | done |
+| H3 | Add "Check for CVEs" checkbox (`#enableCVECheck`) | Between `.form-grid` close and `.actions` | done |
 
-**HTML Config sub-total: 0 / 3**
+**HTML Config sub-total: 3 / 3**
 
 ---
 
@@ -79,13 +79,13 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Location in file | Status |
 |---|---|---|---|
-| H4 | Add 5th metric card `#metricCVEs` (Security Advisories) | After Upgrades Available card | pending |
-| H5 | Add `#effortCVEs` span to effort banner | Before `#effortRepos` in effort banner | pending |
-| H6 | Add "Health Summary" view toggle button (`#viewHealth`) | In `.view-toggle` div | pending |
-| H7 | Add ecosystem filter select (`#filterEcosystem`) to toolbar | Before `#filterStatus` in toolbar | pending |
-| H8 | Add `Vulnerable (CVE)` option to `#filterStatus`; add IDs to `<th>` elements; update no-results text | Table toolbar + table headers | pending |
+| H4 | Add 5th metric card `#metricCVEs` (Security Advisories) | After Upgrades Available card | done |
+| H5 | Add `#effortCVEs` span to effort banner | Before `#effortRepos` in effort banner | done |
+| H6 | Add "Health Summary" view toggle button (`#viewHealth`) | In `.view-toggle` div | done |
+| H7 | Add ecosystem filter select (`#filterEcosystem`) to toolbar | Before `#filterStatus` in toolbar | done |
+| H8 | Add `Vulnerable (CVE)` option to `#filterStatus`; add IDs to `<th>` elements; update no-results text | Table toolbar + table headers | done |
 
-**HTML Results sub-total: 0 / 5**
+**HTML Results sub-total: 5 / 5**
 
 ---
 
@@ -93,17 +93,17 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Replaces / Adds | Status |
 |---|---|---|---|
-| J1 | Update page `<title>` and `<h1>` / `<p>` header text | n/a — HTML text change | pending |
-| J2 | `matchesPatterns()` + `extractMatchingDependencies()` | Replaces `extractVectorComponents()` | pending |
-| J3 | `fetchRawFileContent()` — returns raw text for XML/text files | New function after `fetchFileContent` | pending |
-| J4 | `extractMavenDeps(xmlText)` | New function | pending |
-| J5 | `extractNugetDeps(xmlText)` | New function | pending |
-| J6 | `extractPythonDeps(reqText)` | New function | pending |
-| J7 | `extractRubyDeps(lockText)` | New function | pending |
-| J8 | `resolveLatestMaven()` / `resolveLatestNuget()` / `resolveLatestPypi()` / `resolveLatestRubyGems()` | 4 new version resolver functions | pending |
-| J9 | `isVersionVulnerable(installedVersion, rangeStr)` | New CVE range checker | pending |
+| J1 | Update page `<title>` and `<h1>` / `<p>` header text | n/a — HTML text change | done |
+| J2 | `matchesPatterns()` + `extractMatchingDependencies()` | Replaces `extractVectorComponents()` | done |
+| J3 | `fetchRawFileContent()` — returns raw text for XML/text files | New function after `fetchFileContent` | done |
+| J4 | `extractMavenDeps(xmlText)` | New function | done |
+| J5 | `extractNugetDeps(xmlText)` | New function | done |
+| J6 | `extractPythonDeps(reqText)` | New function | done |
+| J7 | `extractRubyDeps(lockText)` | New function | done |
+| J8 | `resolveLatestMaven()` / `resolveLatestNuget()` / `resolveLatestPypi()` / `resolveLatestRubyGems()` | 4 new version resolver functions | done |
+| J9 | `isVersionVulnerable(installedVersion, rangeStr)` | New CVE range checker | done |
 
-**JS Helpers sub-total: 0 / 9**
+**JS Helpers sub-total: 9 / 9**
 
 ---
 
@@ -111,13 +111,13 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Replaces / Adds | Status |
 |---|---|---|---|
-| S1 | Update `scanRepo()` — new signature + per-ecosystem manifest scanning | Replaces current `scanRepo` | pending |
-| S2 | Update `startScan()` Phase 0 — read DOM config; parallel ecosystem code search queries | Replaces Phase 0 block in `startScan` | pending |
-| S3 | Update `startScan()` Phase 1 — pass `ecosystems` + `patterns` to `scanRepo()` | Modify batch loop in `startScan` | pending |
-| S4 | Update `startScan()` Phase 2 — per-ecosystem version resolution branch | Replaces Phase 2 block in `startScan` | pending |
-| S5 | Add `startScan()` Phase 3 — CVE scan via `checkSecurityAdvisories()` | New phase added after Phase 2 | pending |
+| S1 | Update `scanRepo()` — new signature + per-ecosystem manifest scanning | Replaces current `scanRepo` | done |
+| S2 | Update `startScan()` Phase 0 — read DOM config; parallel ecosystem code search queries | Replaces Phase 0 block in `startScan` | done |
+| S3 | Update `startScan()` Phase 1 — pass `ecosystems` + `patterns` to `scanRepo()` | Modify batch loop in `startScan` | done |
+| S4 | Update `startScan()` Phase 2 — per-ecosystem version resolution branch | Replaces Phase 2 block in `startScan` | done |
+| S5 | Add `startScan()` Phase 3 — CVE scan via `checkSecurityAdvisories()` | New phase added after Phase 2 | done |
 
-**JS Scan sub-total: 0 / 5**
+**JS Scan sub-total: 5 / 5**
 
 ---
 
@@ -125,16 +125,16 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Replaces / Adds | Status |
 |---|---|---|---|
-| R1 | `checkSecurityAdvisories(results, token, signal)` | New function | pending |
-| R2 | Update `statusBadge(r)` — add VULNERABLE case at top | Modify existing function | pending |
-| R3 | Update `renderDashboard()` — populate `#metricCVEs` | Modify existing function | pending |
-| R4 | Update `renderEffortBanner()` — add CVE count to banner | Modify existing function | pending |
-| R5 | Update `renderTable()` — sort order, package display name, ecosystem badge in Type cell | Modify existing function | pending |
-| R6 | Update `toggleDetail()` — prepend CVE advisory panel when `r.advisories` present | Modify existing function | pending |
-| R7 | New `renderHealthTable()` — one row per repo with freshness bar, CVE count, last commit | New async function | pending |
-| R8 | Update `setPivotView()` — add 'health' mode, swap table headers, hide/show toolbar | Modify existing function | pending |
+| R1 | `checkSecurityAdvisories(results, token, signal)` | New function | done |
+| R2 | Update `statusBadge(r)` — add VULNERABLE case at top | Modify existing function | done |
+| R3 | Update `renderDashboard()` — populate `#metricCVEs` | Modify existing function | done |
+| R4 | Update `renderEffortBanner()` — add CVE count to banner | Modify existing function | done |
+| R5 | Update `renderTable()` — sort order, package display name, ecosystem badge in Type cell | Modify existing function | done |
+| R6 | Update `toggleDetail()` — prepend CVE advisory panel when `r.advisories` present | Modify existing function | done |
+| R7 | New `renderHealthTable()` — one row per repo with freshness bar, CVE count, last commit | New async function | done |
+| R8 | Update `setPivotView()` — add 'health' mode, swap table headers, hide/show toolbar | Modify existing function | done |
 
-**JS Rendering sub-total: 0 / 8**
+**JS Rendering sub-total: 8 / 8**
 
 ---
 
@@ -142,11 +142,11 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Replaces / Adds | Status |
 |---|---|---|---|
-| F1 | Update `filterTable()` — add ecosystem filter + vulnerable status handling | Modify existing function | pending |
-| F2 | Update `exportCSV()` — add Ecosystem + CVEs columns | Modify existing function | pending |
-| F3 | Update `exportJSON()` — add ecosystem, cveCount, advisories fields | Modify existing function | pending |
+| F1 | Update `filterTable()` — add ecosystem filter + vulnerable status handling | Modify existing function | done |
+| F2 | Update `exportCSV()` — add Ecosystem + CVEs columns | Modify existing function | done |
+| F3 | Update `exportJSON()` — add ecosystem, cveCount, advisories fields | Modify existing function | done |
 
-**JS Filtering sub-total: 0 / 3**
+**JS Filtering sub-total: 3 / 3**
 
 ---
 
@@ -154,8 +154,8 @@ Transform the single-purpose VWC dashboard into a full org-wide dependency healt
 
 | # | Item | Status |
 |---|---|---|
-| O1 | Update `CLAUDE.md` — revise "What This Is" description to reflect expanded scope | pending |
-| O2 | Update `.metrics` CSS grid: `repeat(4, 1fr)` → `repeat(auto-fit, minmax(180px, 1fr))` | pending |
+| O1 | Update `CLAUDE.md` — revise "What This Is" description to reflect expanded scope | done |
+| O2 | Update `.metrics` CSS grid: `repeat(4, 1fr)` → `repeat(auto-fit, minmax(180px, 1fr))` | done |
 
 **Other sub-total: 0 / 2**
 

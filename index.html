@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vector Web Components Dashboard</title>
+  <title>VectorLearning Dependency Health</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -305,7 +305,7 @@
     /* Metric cards */
     .metrics {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
@@ -1258,14 +1258,105 @@
         width: 95vw;
       }
     }
+
+    /* ── C1: VULNERABLE badge ── */
+    .badge-dark-red {
+      background: #450a0a;
+      color: #fca5a5;
+      border: 1px solid #7f1d1d;
+    }
+
+    /* ── C2: Ecosystem badge (shown in Type column) ── */
+    .ecosystem-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── C3: Health Summary freshness bar ── */
+    .freshness-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--border);
+      overflow: hidden;
+      width: 80px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    .freshness-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* ── C4: Ecosystem checkboxes in config card ── */
+    .ecosystems-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .ecosystem-check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.85rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .ecosystem-check-label input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    /* ── C5: CVE advisory detail panel ── */
+    .cve-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .cve-item {
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+    }
+    .cve-item .cve-id {
+      font-weight: 700;
+      color: #991b1b;
+    }
+    .cve-severity {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+    .cve-severity-critical { background: #450a0a; color: #fca5a5; }
+    .cve-severity-high { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .cve-severity-medium { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .cve-severity-low { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
   </style>
 </head>
 
 <body>
 
   <div class="header">
-    <h1>Vector Web Components Dashboard</h1>
-    <p>Scan GitHub repos to audit @vector-web-components usage, versions, and available upgrades</p>
+    <h1>VectorLearning Dependency Health</h1>
+    <p>Audit dependency health across all org repos — versions, CVEs, and upgrade effort</p>
   </div>
 
   <div class="container">
@@ -1328,6 +1419,35 @@
               style="padding:10px 14px;font-size:0.9rem;font-weight:600;color:var(--text);background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;">
               VectorLearning/vector-web-components</div>
           </div>
+          <!-- H1: Packages to Audit -->
+          <div class="form-group form-full">
+            <label>Packages to Audit
+              <span style="font-weight:400;text-transform:none;font-size:0.72rem;color:var(--text-muted);">(comma-separated; use * for all packages)</span>
+            </label>
+            <input type="text" id="packageScopeInput" value="@vector-web-components/*"
+              placeholder="@vector-web-components/*, react, axios" />
+            <span class="help-text">Default: <code>@vector-web-components/*</code> — audits VWC only. Set <code>*</code> to scan all packages (skips Phase 0 pre-filter).</span>
+          </div>
+          <!-- H2: Ecosystems -->
+          <div class="form-group form-full">
+            <label>Ecosystems</label>
+            <div class="ecosystems-group">
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoNpm" checked onchange="updateEcosystems()"> npm</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoMaven" onchange="updateEcosystems()"> Maven (pom.xml)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoNuget" onchange="updateEcosystems()"> NuGet (.csproj)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoPython" onchange="updateEcosystems()"> Python (requirements.txt)</label>
+              <label class="ecosystem-check-label"><input type="checkbox" id="ecoRuby" onchange="updateEcosystems()"> Ruby (Gemfile.lock)</label>
+            </div>
+          </div>
+        </div>
+        <!-- H3: CVE checkbox -->
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+          <label class="ecosystem-check-label">
+            <input type="checkbox" id="enableCVECheck">
+            <span>Check for CVEs
+              <span style="font-weight:400;font-size:0.78rem;color:var(--text-muted);">(slower — queries GitHub Security Advisory DB)</span>
+            </span>
+          </label>
         </div>
         <div class="actions">
           <button class="btn btn-primary" id="scanBtn" onclick="startScan()">
@@ -1390,6 +1510,12 @@
           <div class="detail">behind latest version</div>
           <div class="metric-delta hidden" id="deltaOutdated"></div>
         </div>
+        <!-- H4: Security Advisories metric card -->
+        <div class="metric-card red hidden" id="metricCVEs">
+          <div class="label">Security Advisories</div>
+          <div class="value">0</div>
+          <div class="detail">vulnerable packages</div>
+        </div>
       </div>
 
       <!-- Upgrade Effort Banner -->
@@ -1398,6 +1524,8 @@
         <span class="effort-item" id="effortMajor"></span>
         <span class="effort-item" id="effortMinor"></span>
         <span class="effort-item" id="effortPatch"></span>
+        <!-- H5: CVE effort item -->
+        <span class="effort-item hidden" id="effortCVEs"></span>
         <span id="effortRepos" style="color:var(--text-muted);font-size:0.82rem;"></span>
       </div>
 
@@ -1428,6 +1556,8 @@
             <div class="view-toggle">
               <button class="view-toggle-btn active" id="viewByRepo" onclick="setPivotView('repo')">By Repo</button>
               <button class="view-toggle-btn" id="viewByComponent" onclick="setPivotView('component')">By Component</button>
+              <!-- H6: Health Summary view toggle -->
+              <button class="view-toggle-btn" id="viewHealth" onclick="setPivotView('health')">Health Summary</button>
             </div>
             <button class="export-btn" onclick="exportCSV()">&#8659; CSV</button>
             <button class="export-btn" onclick="exportJSON()">&#8659; JSON</button>
@@ -1442,8 +1572,19 @@
           <select class="toolbar-select" id="filterRepoClass" onchange="filterTable()">
             <option value="">All Classes</option>
           </select>
+          <!-- H7: Ecosystem filter -->
+          <select class="toolbar-select" id="filterEcosystem" onchange="filterTable()">
+            <option value="">All Ecosystems</option>
+            <option value="npm">npm</option>
+            <option value="maven">Maven</option>
+            <option value="nuget">NuGet</option>
+            <option value="python">Python</option>
+            <option value="ruby">Ruby</option>
+          </select>
           <select class="toolbar-select" id="filterStatus" onchange="filterTable()">
             <option value="">All Statuses</option>
+            <!-- H8: Vulnerable option -->
+            <option value="vulnerable">Vulnerable (CVE)</option>
             <option value="major">Major update</option>
             <option value="minor">Minor update</option>
             <option value="patch">Patch available</option>
@@ -1457,11 +1598,11 @@
               <tr>
                 <th id="thFile">File</th>
                 <th id="thPackage">Package</th>
-                <th>Installed</th>
-                <th>Latest</th>
-                <th>Status</th>
-                <th>Type</th>
-                <th>Details</th>
+                <th id="thInstalled">Installed</th>
+                <th id="thLatest">Latest</th>
+                <th id="thStatus">Status</th>
+                <th id="thType">Type</th>
+                <th id="thDetails">Details</th>
               </tr>
             </thead>
             <tbody id="resultsBody"></tbody>
@@ -1483,7 +1624,7 @@
         </div>
         <div class="no-results hidden" id="noResults">
           <div class="icon">&#128269;</div>
-          No @vector-web-components found in the scanned repos.
+          No dependencies found in the scanned repos.
         </div>
       </div>
 
@@ -2117,44 +2258,242 @@
       catch { return null; }
     }
 
-    function extractVectorComponents(pkgJson, depType) {
+    // ── J2: Pattern matching + dependency extractor (replaces extractVectorComponents) ──
+    function matchesPatterns(name, patterns) {
+      if (!patterns || patterns.length === 0 || patterns.includes('*')) return true;
+      return patterns.some(p => {
+        const pat = p.trim();
+        if (!pat || pat === '*') return true;
+        if (pat.endsWith('/*')) return name.startsWith(pat.slice(0, -1));
+        return name === pat;
+      });
+    }
+
+    function extractMatchingDependencies(pkgJson, patterns, depType) {
       const deps = pkgJson[depType];
       if (!deps) return [];
       return Object.entries(deps)
-        .filter(([name]) => name.startsWith('@vector-web-components/'))
-        .map(([name, version]) => ({ name, version, depType }));
+        .filter(([name]) => matchesPatterns(name, patterns))
+        .map(([name, version]) => ({ name, version, depType, ecosystem: 'npm' }));
     }
 
-    async function scanRepo(org, repo, token, signal) {
+    // ── J3: Raw file content (for XML/text manifests) ──
+    async function fetchRawFileContent(fullRepoPath, filePath, token, signal) {
+      const url = `https://api.github.com/repos/${fullRepoPath}/contents/${filePath}`;
+      const data = await ghFetch(url, token, signal);
+      if (!data || !data.content) return null;
+      try { return atob(data.content.replace(/\n/g, '')); }
+      catch { return null; }
+    }
+
+    // ── J4: Maven parser ──
+    function extractMavenDeps(xmlText) {
+      const deps = [];
+      const depBlockRegex = /<dependency>([\s\S]*?)<\/dependency>/g;
+      let match;
+      while ((match = depBlockRegex.exec(xmlText)) !== null) {
+        const block = match[1];
+        const groupId = (block.match(/<groupId>([^<]+)<\/groupId>/) || [])[1];
+        const artifactId = (block.match(/<artifactId>([^<]+)<\/artifactId>/) || [])[1];
+        const version = (block.match(/<version>([^<]+)<\/version>/) || [])[1];
+        const scope = (block.match(/<scope>([^<]+)<\/scope>/) || [])[1] || 'compile';
+        if (groupId && artifactId)
+          deps.push({ name: `${groupId}:${artifactId}`, version: version || 'unknown', depType: scope, ecosystem: 'maven' });
+      }
+      return deps;
+    }
+
+    // ── J5: NuGet parser ──
+    function extractNugetDeps(xmlText) {
+      const deps = [];
+      const pkgRefRegex = /<PackageReference\s+Include="([^"]+)"(?:[^>]*Version="([^"]*)")?[^>]*(?:\/>|>[\s\S]*?<\/PackageReference>)/gi;
+      let match;
+      while ((match = pkgRefRegex.exec(xmlText)) !== null) {
+        let version = match[2];
+        if (!version) {
+          const after = xmlText.slice(match.index, match.index + 200);
+          const vc = after.match(/<Version>([^<]+)<\/Version>/i);
+          if (vc) version = vc[1];
+        }
+        if (match[1]) deps.push({ name: match[1], version: version || 'unknown', depType: 'dependency', ecosystem: 'nuget' });
+      }
+      const pkgConfigRegex = /<package\s+id="([^"]+)"\s+version="([^"]+)"/gi;
+      while ((match = pkgConfigRegex.exec(xmlText)) !== null)
+        deps.push({ name: match[1], version: match[2], depType: 'dependency', ecosystem: 'nuget' });
+      return deps;
+    }
+
+    // ── J6: Python parser ──
+    function extractPythonDeps(reqText) {
+      const deps = [];
+      for (const line of reqText.split('\n')) {
+        const t = line.trim();
+        if (!t || t.startsWith('#') || t.startsWith('-')) continue;
+        const m = t.match(/^([A-Za-z0-9_.\-]+)\s*(?:==|>=|~=|<=|!=|>|<)\s*([^\s,;]+)/);
+        if (m) deps.push({ name: m[1], version: m[2], depType: 'dependency', ecosystem: 'python' });
+        else if (/^[A-Za-z0-9_.\-]+$/.test(t))
+          deps.push({ name: t, version: 'unknown', depType: 'dependency', ecosystem: 'python' });
+      }
+      return deps;
+    }
+
+    // ── J7: Ruby parser ──
+    function extractRubyDeps(lockText) {
+      const deps = [];
+      const gemRegex = /^    ([a-zA-Z0-9_\-\.]+) \((\d[^)]*)\)$/gm;
+      let match;
+      while ((match = gemRegex.exec(lockText)) !== null)
+        deps.push({ name: match[1], version: match[2], depType: 'dependency', ecosystem: 'ruby' });
+      return deps;
+    }
+
+    // ── J8: Version resolvers (Maven Central, NuGet, PyPI, RubyGems) ──
+    async function resolveLatestMaven(name, signal) {
+      const [groupId, artifactId] = name.split(':');
+      if (!groupId || !artifactId) return null;
+      try {
+        const url = `https://search.maven.org/solrsearch/select?q=g:${encodeURIComponent(groupId)}+AND+a:${encodeURIComponent(artifactId)}&wt=json&rows=1`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data?.response?.docs?.[0]?.latestVersion || data?.response?.docs?.[0]?.v || null;
+      } catch { return null; }
+    }
+
+    async function resolveLatestNuget(name, signal) {
+      try {
+        const url = `https://api.nuget.org/v3-flatcontainer/${name.toLowerCase()}/index.json`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        const versions = data?.versions || [];
+        const stable = versions.filter(v => !v.includes('-'));
+        return stable.length ? stable[stable.length - 1] : (versions.length ? versions[versions.length - 1] : null);
+      } catch { return null; }
+    }
+
+    async function resolveLatestPypi(name, signal) {
+      try {
+        const url = `https://pypi.org/pypi/${encodeURIComponent(name)}/json`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data?.info?.version || null;
+      } catch { return null; }
+    }
+
+    async function resolveLatestRubyGems(name, signal) {
+      try {
+        const url = `https://rubygems.org/api/v1/gems/${encodeURIComponent(name)}.json`;
+        const resp = await fetch(url, signal ? { signal } : {});
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        return data?.version || null;
+      } catch { return null; }
+    }
+
+    // ── J9: CVE vulnerability range checker ──
+    function isVersionVulnerable(installedVersion, rangeStr) {
+      if (!rangeStr || !installedVersion || installedVersion === 'unknown') return false;
+      const conditions = rangeStr.split(',').map(s => s.trim()).filter(Boolean);
+      for (const cond of conditions) {
+        const m = cond.match(/^(>=|<=|>|<|=|~>)\s*(.+)$/);
+        if (!m) continue;
+        const op = m[1];
+        const cmp = compareSemver(installedVersion, m[2].trim());
+        if (op === '>=' && !(cmp >= 0)) return false;
+        if (op === '<=' && !(cmp <= 0)) return false;
+        if (op === '>'  && !(cmp >  0)) return false;
+        if (op === '<'  && !(cmp <  0)) return false;
+        if (op === '='  && !(cmp === 0)) return false;
+      }
+      return conditions.length > 0;
+    }
+
+    // ── updateEcosystems: validates at least one ecosystem is checked ──
+    function updateEcosystems() {
+      const anyChecked = ['ecoNpm','ecoMaven','ecoNuget','ecoPython','ecoRuby']
+        .some(id => document.getElementById(id).checked);
+      document.getElementById('scanBtn').disabled = !anyChecked;
+    }
+
+    // ── S1: Multi-ecosystem scanRepo ──
+    async function scanRepo(org, repo, token, signal, ecosystems, patterns) {
       const results = [];
 
-      const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token, signal);
-      if (rootPkg) {
-        for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
-          for (const c of extractVectorComponents(rootPkg, dt)) {
-            results.push({ repo, file: 'package.json', ...c });
+      // npm
+      if (ecosystems.has('npm')) {
+        const rootPkg = await fetchFileContent(`${org}/${repo}`, 'package.json', token, signal);
+        if (rootPkg) {
+          for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+            for (const c of extractMatchingDependencies(rootPkg, patterns, dt)) {
+              results.push({ repo, file: 'package.json', ...c });
+            }
           }
         }
-      }
-
-      for (const subdir of ['packages', 'apps', 'libs']) {
-        try {
-          const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token, signal);
-          if (dirData && Array.isArray(dirData)) {
-            for (const item of dirData) {
-              if (item.type === 'dir') {
-                const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token, signal);
-                if (subPkg) {
-                  for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
-                    for (const c of extractVectorComponents(subPkg, dt)) {
-                      results.push({ repo, file: `${subdir}/${item.name}/package.json`, ...c });
+        for (const subdir of ['packages', 'apps', 'libs']) {
+          try {
+            const dirData = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/${subdir}`, token, signal);
+            if (dirData && Array.isArray(dirData)) {
+              for (const item of dirData) {
+                if (item.type === 'dir') {
+                  const subPkg = await fetchFileContent(`${org}/${repo}`, `${subdir}/${item.name}/package.json`, token, signal);
+                  if (subPkg) {
+                    for (const dt of ['dependencies', 'devDependencies', 'peerDependencies']) {
+                      for (const c of extractMatchingDependencies(subPkg, patterns, dt)) {
+                        results.push({ repo, file: `${subdir}/${item.name}/package.json`, ...c });
+                      }
                     }
                   }
                 }
               }
             }
+          } catch (e) { if (e.name === 'AbortError') throw e; }
+        }
+      }
+
+      // Maven
+      if (ecosystems.has('maven')) {
+        const pomRaw = await fetchRawFileContent(`${org}/${repo}`, 'pom.xml', token, signal);
+        if (pomRaw) {
+          for (const c of extractMavenDeps(pomRaw)) results.push({ repo, file: 'pom.xml', ...c });
+        }
+      }
+
+      // NuGet
+      if (ecosystems.has('nuget')) {
+        try {
+          const rootContents = await ghFetch(`https://api.github.com/repos/${org}/${repo}/contents/`, token, signal);
+          if (rootContents && Array.isArray(rootContents)) {
+            for (const item of rootContents) {
+              if (item.type === 'file' && item.name.endsWith('.csproj')) {
+                const raw = await fetchRawFileContent(`${org}/${repo}`, item.name, token, signal);
+                if (raw) for (const c of extractNugetDeps(raw)) results.push({ repo, file: item.name, ...c });
+              }
+            }
+            const pkgConfig = rootContents.find(i => i.name === 'packages.config');
+            if (pkgConfig) {
+              const raw = await fetchRawFileContent(`${org}/${repo}`, 'packages.config', token, signal);
+              if (raw) for (const c of extractNugetDeps(raw)) results.push({ repo, file: 'packages.config', ...c });
+            }
           }
-        } catch (e) { if (e.name === 'AbortError') throw e; /* subdir not found */ }
+        } catch (e) { if (e.name === 'AbortError') throw e; }
+      }
+
+      // Python
+      if (ecosystems.has('python')) {
+        const reqRaw = await fetchRawFileContent(`${org}/${repo}`, 'requirements.txt', token, signal);
+        if (reqRaw) {
+          for (const c of extractPythonDeps(reqRaw)) results.push({ repo, file: 'requirements.txt', ...c });
+        }
+      }
+
+      // Ruby
+      if (ecosystems.has('ruby')) {
+        const lockRaw = await fetchRawFileContent(`${org}/${repo}`, 'Gemfile.lock', token, signal);
+        if (lockRaw) {
+          for (const c of extractRubyDeps(lockRaw)) results.push({ repo, file: 'Gemfile.lock', ...c });
+        }
       }
 
       return results;
@@ -2351,6 +2690,21 @@
         return;
       }
 
+      // ── S2: Read scan config from DOM ──
+      const rawPatterns = (document.getElementById('packageScopeInput').value || '@vector-web-components/*')
+        .split(',').map(s => s.trim()).filter(Boolean);
+      const isWildcard = rawPatterns.length === 0 || rawPatterns.includes('*');
+      const ecosystems = new Set([
+        ...(document.getElementById('ecoNpm').checked    ? ['npm']    : []),
+        ...(document.getElementById('ecoMaven').checked  ? ['maven']  : []),
+        ...(document.getElementById('ecoNuget').checked  ? ['nuget']  : []),
+        ...(document.getElementById('ecoPython').checked ? ['python'] : []),
+        ...(document.getElementById('ecoRuby').checked   ? ['ruby']   : []),
+      ]);
+      const runCVE = document.getElementById('enableCVECheck').checked;
+
+      if (ecosystems.size === 0) { setStatus('Please select at least one ecosystem.', 'error'); return; }
+
       clearAutoRefresh();
       document.getElementById('autoRefreshCountdown').classList.add('hidden');
 
@@ -2366,41 +2720,55 @@
 
       try {
 
-        // ── Phase 0: Pre-filter repos using GitHub Code Search ──
-        setStatus(`Pre-filtering ${repos.length} repos for @vector-web-components usage...`);
+        // ── Phase 0 (S2): Parallel ecosystem code search pre-filter ──
+        setStatus(`Pre-filtering ${repos.length} repos...`);
         setProgress(2);
         let reposToScan = repos;
         try {
-          const codeSearchHits = new Set();
-          let page = 1;
-          while (true) {
-            const data = await ghFetch(
-              `https://api.github.com/search/code?q=%22%40vector-web-components%22+filename%3Apackage.json+org%3A${encodeURIComponent(org)}&per_page=100&page=${page}`,
-              token, signal
-            );
-            if (!data || !data.items || data.items.length === 0) break;
-            for (const item of data.items) {
-              if (item.repository && item.repository.name) {
-                codeSearchHits.add(item.repository.name);
-              }
+          const queries = [];
+          if (ecosystems.has('npm') && !isWildcard) {
+            for (const p of rawPatterns) {
+              const term = p.endsWith('/*') ? p.slice(0, -2) : p;
+              queries.push(`"${term}" filename:package.json org:${encodeURIComponent(org)}`);
             }
-            if (data.items.length < 100) break;
-            page++;
+          } else if (ecosystems.has('npm')) {
+            queries.push(`filename:package.json org:${encodeURIComponent(org)}`);
           }
-          // Keep only selected repos that have hits
+          if (ecosystems.has('maven'))  queries.push(`filename:pom.xml org:${encodeURIComponent(org)}`);
+          if (ecosystems.has('nuget'))  queries.push(`filename:.csproj org:${encodeURIComponent(org)}`);
+          if (ecosystems.has('python')) queries.push(`filename:requirements.txt org:${encodeURIComponent(org)}`);
+          if (ecosystems.has('ruby'))   queries.push(`filename:Gemfile.lock org:${encodeURIComponent(org)}`);
+
+          const codeSearchHits = new Set();
+          const searchResults = await Promise.allSettled(queries.map(async q => {
+            const hits = new Set();
+            let page = 1;
+            while (true) {
+              const data = await ghFetch(
+                `https://api.github.com/search/code?q=${encodeURIComponent(q)}&per_page=100&page=${page}`,
+                token, signal
+              );
+              if (!data?.items?.length) break;
+              for (const item of data.items) if (item.repository?.name) hits.add(item.repository.name);
+              if (data.items.length < 100) break;
+              page++;
+            }
+            return hits;
+          }));
+          for (const r of searchResults) {
+            if (r.status === 'fulfilled') r.value.forEach(h => codeSearchHits.add(h));
+          }
           if (codeSearchHits.size > 0) {
             reposToScan = repos.filter(r => codeSearchHits.has(r));
-            setStatus(`Found ${reposToScan.length} of ${repos.length} selected repos with @vector-web-components usage.`);
+            setStatus(`Pre-filter: ${reposToScan.length} of ${repos.length} repos have matching manifests.`);
           }
-          // If code search returned nothing (e.g. API issue), fall back to scanning all selected
         } catch (e) {
           if (e.name === 'AbortError') throw e;
-          // Code search failed (rate limit, permissions, etc.) — fall back to full scan
           setStatus(`Code search unavailable, scanning all ${repos.length} selected repos...`);
         }
         setProgress(10);
 
-        // ── Phase 1: Scan consumer repos for component usage (concurrent) ──
+        // ── Phase 1 (S3): Scan repos concurrently (batches of 5) ──
         allResults = [];
         const errors = [];
         const CONCURRENCY = 5;
@@ -2413,7 +2781,7 @@
           setProgress(10 + ((i + 1) / reposToScan.length) * 30);
 
           const batchResults = await Promise.allSettled(
-            batch.map(repo => scanRepo(org, repo, token, signal))
+            batch.map(repo => scanRepo(org, repo, token, signal, ecosystems, rawPatterns))
           );
 
           for (let j = 0; j < batchResults.length; j++) {
@@ -2427,12 +2795,16 @@
           }
         }
 
-        // ── Phase 2: Resolve latest versions ──
-        const uniquePackages = [...new Set(allResults.map(r => r.name))];
-        let libData = null;
+        // ── Phase 2 (S4): Resolve latest versions per ecosystem ──
+        const seenPkgs = new Set();
+        const uniquePkgPairs = [];
+        for (const r of allResults) {
+          const key = `${r.ecosystem}:${r.name}`;
+          if (!seenPkgs.has(key)) { seenPkgs.add(key); uniquePkgPairs.push({ ecosystem: r.ecosystem, name: r.name }); }
+        }
 
-        // Strategy A: Use the component library GitHub repo (preferred)
-        if (libRepo) {
+        let libData = null;
+        if (ecosystems.has('npm') && libRepo) {
           setStatus('Scanning component library repo for latest versions...');
           setProgress(50);
           try {
@@ -2443,36 +2815,35 @@
           }
         }
 
-        // Apply version info to each result
-        for (let i = 0; i < uniquePackages.length; i++) {
+        for (let i = 0; i < uniquePkgPairs.length; i++) {
           if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
-
-          const pkg = uniquePackages[i];
-          setStatus(`Resolving versions: ${pkg.replace('@vector-web-components/', '')} (${i + 1}/${uniquePackages.length})...`);
-          setProgress(55 + ((i + 1) / uniquePackages.length) * 40);
+          const { ecosystem, name } = uniquePkgPairs[i];
+          setStatus(`Resolving versions: ${name} (${i + 1}/${uniquePkgPairs.length})...`);
+          setProgress(55 + ((i + 1) / uniquePkgPairs.length) * 35);
 
           let latestVersion = null;
           let versionTimeline = [];
           let releases = [];
 
-          // Try GitHub lib repo first
-          if (libData && libData.latestVersions[pkg]) {
-            latestVersion = libData.latestVersions[pkg];
-            releases = libData.releases;
-            versionTimeline = buildTagTimeline(pkg, libData.allTags, libData.releases);
-          }
-
-          // Fallback: try npm registry
-          if (!latestVersion) {
-            const npmInfo = await fetchNpmLatest(pkg, signal);
-            if (npmInfo) {
-              latestVersion = npmInfo.latest;
-              versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
+          if (ecosystem === 'npm') {
+            if (libData && libData.latestVersions[name]) {
+              latestVersion = libData.latestVersions[name];
+              releases = libData.releases;
+              versionTimeline = buildTagTimeline(name, libData.allTags, libData.releases);
             }
-          }
+            if (!latestVersion) {
+              const npmInfo = await fetchNpmLatest(name, signal);
+              if (npmInfo) {
+                latestVersion = npmInfo.latest;
+                versionTimeline = npmInfo.versions.map(v => ({ version: v.version, date: v.date, body: null }));
+              }
+            }
+          } else if (ecosystem === 'maven')  { latestVersion = await resolveLatestMaven(name, signal); }
+            else if (ecosystem === 'nuget')  { latestVersion = await resolveLatestNuget(name, signal); }
+            else if (ecosystem === 'python') { latestVersion = await resolveLatestPypi(name, signal); }
+            else if (ecosystem === 'ruby')   { latestVersion = await resolveLatestRubyGems(name, signal); }
 
-          // Apply to all results matching this package
-          for (const r of allResults.filter(r => r.name === pkg)) {
+          for (const r of allResults.filter(r => r.ecosystem === ecosystem && r.name === name)) {
             r.latestVersion = latestVersion;
             r.allVersions = versionTimeline;
             r.releases = releases;
@@ -2480,9 +2851,21 @@
           }
         }
 
+        // ── Phase 3 (S5): CVE / Security Advisory scan (opt-in) ──
+        if (runCVE && allResults.length > 0) {
+          setStatus('Checking for security advisories...');
+          setProgress(93);
+          try {
+            await checkSecurityAdvisories(allResults, token, signal);
+          } catch (e) {
+            if (e.name === 'AbortError') throw e;
+            errors.push(`CVE scan: ${e.message}`);
+          }
+        }
+
         setProgress(100);
         const skipped = repos.length - reposToScan.length;
-        const skippedMsg = skipped > 0 ? ` (${skipped} repos skipped — no component usage found)` : '';
+        const skippedMsg = skipped > 0 ? ` (${skipped} repos skipped — no matching manifests found)` : '';
         renderDashboard(allResults, reposToScan.length, errors);
         setStatus(errors.length ? `Done with ${errors.length} error(s).${skippedMsg}` : `Scan complete.${skippedMsg}`);
         scheduleAutoRefresh();
@@ -2502,6 +2885,46 @@
       }
     }
 
+    // ── R1: CVE / Security Advisory checker ──
+    async function checkSecurityAdvisories(results, token, signal) {
+      const ecoMap = { npm: 'npm', maven: 'maven', nuget: 'nuget', python: 'pip', ruby: 'rubygems' };
+      const seenPkgs = new Set();
+      const uniquePkgs = [];
+      for (const r of results) {
+        const key = `${r.ecosystem}:${r.name}`;
+        if (!seenPkgs.has(key)) { seenPkgs.add(key); uniquePkgs.push({ ecosystem: r.ecosystem, name: r.name }); }
+      }
+      for (const pkg of uniquePkgs) {
+        if (signal.aborted) throw new DOMException('Scan cancelled', 'AbortError');
+        const ghEco = ecoMap[pkg.ecosystem] || pkg.ecosystem;
+        try {
+          const url = `https://api.github.com/advisories?type=reviewed&ecosystem=${ghEco}&package=${encodeURIComponent(pkg.name)}&per_page=100`;
+          const data = await ghFetch(url, token, signal);
+          if (!data || !Array.isArray(data) || data.length === 0) continue;
+          for (const r of results.filter(x => x.ecosystem === pkg.ecosystem && x.name === pkg.name)) {
+            const matching = [];
+            for (const advisory of data) {
+              const vuln = (advisory.vulnerabilities || []).find(v =>
+                v.package?.name === pkg.name &&
+                (v.package?.ecosystem || '').toLowerCase() === ghEco.toLowerCase()
+              );
+              if (!vuln) continue;
+              if (isVersionVulnerable(r.version, vuln.vulnerable_version_range || '')) {
+                matching.push({
+                  ghsa_id: advisory.ghsa_id,
+                  cve_id: advisory.cve_id,
+                  severity: advisory.severity,
+                  summary: advisory.summary,
+                  patched_versions: vuln.patched_versions || null
+                });
+              }
+            }
+            if (matching.length > 0) { r.advisories = matching; r.diffType = 'vulnerable'; }
+          }
+        } catch (e) { if (e.name === 'AbortError') throw e; }
+      }
+    }
+
     // ── Rendering ──
     function renderDashboard(results, repoCount, errors) {
       document.getElementById('resultsSection').classList.remove('hidden');
@@ -2512,10 +2935,14 @@
       const unknown = results.filter(r => r.diffType === 'unknown').length;
 
       // Metrics
+      const vulnCount = results.filter(r => r.advisories?.length > 0).length;
       document.querySelector('#metricRepos .value').textContent = repoCount;
       document.querySelector('#metricComponents .value').textContent = uniqueComponents.size;
       document.querySelector('#metricUpToDate .value').textContent = upToDate;
       document.querySelector('#metricOutdated .value').textContent = outdated;
+      // R3: CVE metric card
+      document.querySelector('#metricCVEs .value').textContent = vulnCount;
+      document.getElementById('metricCVEs').classList.toggle('hidden', vulnCount === 0);
       if (unknown > 0) {
         document.querySelector('#metricOutdated .detail').textContent = `behind latest (${unknown} unknown)`;
       } else {
@@ -2624,7 +3051,10 @@
       });
     }
 
+    // ── R2: statusBadge with VULNERABLE ──
     function statusBadge(r) {
+      if (r.advisories?.length > 0 || r.diffType === 'vulnerable')
+        return '<span class="badge badge-dark-red">&#9888; VULNERABLE</span>';
       if (r.diffType === 'current') return '<span class="badge badge-green">&#10003; Up to date</span>';
       if (r.diffType === 'patch') return '<span class="badge badge-green">Patch available</span>';
       if (r.diffType === 'minor') return '<span class="badge badge-amber">Minor update</span>';
@@ -2656,9 +3086,9 @@
         results.sort((a, b) => {
           const repoCompare = a.repo.localeCompare(b.repo);
           if (repoCompare !== 0) return repoCompare;
-          const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
-          const da = diffOrder[a.diffType] ?? 5;
-          const db = diffOrder[b.diffType] ?? 5;
+          const diffOrder = { vulnerable: 0, major: 1, minor: 2, patch: 3, unknown: 4, current: 5 };
+          const da = diffOrder[a.diffType] ?? 6;
+          const db = diffOrder[b.diffType] ?? 6;
           if (da !== db) return da - db;
           return a.name.localeCompare(b.name);
         });
@@ -2701,7 +3131,7 @@
           body.appendChild(groupRow);
         }
 
-        const shortName = r.name.replace('@vector-web-components/', '');
+        const shortName = r.ecosystem === 'npm' ? r.name.replace('@vector-web-components/', '') : r.name;
         const canExpand = r.diffType !== 'current';
 
         const tr = document.createElement('tr');
@@ -2712,7 +3142,7 @@
           <td><span class="badge badge-gray">${r.version}</span></td>
           <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' + (r.diffType !== 'current' ? ' <button class="copy-btn" title="Copy: npm install ' + r.name + '@' + r.latestVersion + '" onclick="copyUpgradeCmd(\'' + r.name + '\',\'' + r.latestVersion + '\',this)">&#128203;</button>' : '') : '<span class="badge badge-gray">N/A</span>'}</td>
           <td>${statusBadge(r)}</td>
-          <td><span class="dep-type">${r.depType}</span></td>
+          <td><span class="ecosystem-badge">${r.ecosystem || 'npm'}</span> <span class="dep-type">${r.depType}</span></td>
           <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + globalIdx + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
         `;
         body.appendChild(tr);
@@ -2800,6 +3230,23 @@
       const detailRow = document.createElement('tr');
       detailRow.className = 'detail-row';
       detailRow.id = 'detail-' + idx;
+
+      // R6: CVE advisory panel
+      let cveHTML = '';
+      if (r.advisories?.length > 0) {
+        cveHTML = '<div class="cve-list">';
+        for (const adv of r.advisories) {
+          const sevClass = `cve-severity-${(adv.severity || 'unknown').toLowerCase()}`;
+          cveHTML += `<div class="cve-item">
+            <span class="cve-id">${adv.ghsa_id}</span>
+            ${adv.cve_id ? `<span style="font-size:0.8rem;color:var(--text-muted);margin-left:6px;">(${adv.cve_id})</span>` : ''}
+            <span class="cve-severity ${sevClass}">${adv.severity || 'unknown'}</span>
+            <div style="margin-top:6px;">${adv.summary || ''}</div>
+            ${adv.patched_versions ? `<div style="margin-top:4px;font-size:0.8rem;color:var(--green);">Patched in: ${adv.patched_versions}</div>` : ''}
+          </div>`;
+        }
+        cveHTML += '</div>';
+      }
 
       let timelineHTML = '';
 
@@ -2897,7 +3344,8 @@
       detailRow.innerHTML = `<td colspan="7">
         <div class="detail-panel">
           ${headerHTML}
-          ${timelineHTML || fallbackHTML}
+          ${cveHTML}
+          ${timelineHTML || (cveHTML ? '' : fallbackHTML)}
         </div>
       </td>`;
 
@@ -2912,38 +3360,134 @@
       URL.revokeObjectURL(url);
     }
 
+    // ── F2: exportCSV with ecosystem + CVE columns ──
     function exportCSV() {
       if (!filteredResults.length) return;
-      const headers = ['Repo', 'File', 'Package', 'Installed', 'Latest', 'Status', 'Dep Type', 'Product', 'Repo-Class'];
+      const headers = ['Repo', 'File', 'Package', 'Ecosystem', 'Installed', 'Latest', 'Status', 'Dep Type', 'CVEs', 'Product', 'Repo-Class'];
       const rows = filteredResults.map(r => [
-        r.repo, r.file, r.name, r.version, r.latestVersion || '', r.diffType,
-        r.depType, productMap[r.repo] || '', repoClassMap[r.repo] || ''
+        r.repo, r.file, r.name, r.ecosystem || 'npm', r.version, r.latestVersion || '', r.diffType,
+        r.depType, (r.advisories?.length || 0).toString(),
+        productMap[r.repo] || '', repoClassMap[r.repo] || ''
       ]);
       const csv = [headers, ...rows].map(row =>
         row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
       ).join('\n');
-      downloadFile('vwc-audit.csv', 'text/csv;charset=utf-8', csv);
+      downloadFile('dep-health-audit.csv', 'text/csv;charset=utf-8', csv);
     }
 
+    // ── F3: exportJSON with ecosystem + CVE fields ──
     function exportJSON() {
       if (!filteredResults.length) return;
       const data = filteredResults.map(r => ({
         repo: r.repo, file: r.file, package: r.name,
+        ecosystem: r.ecosystem || 'npm',
         installedVersion: r.version, latestVersion: r.latestVersion || null,
         status: r.diffType, depType: r.depType,
+        cveCount: r.advisories?.length || 0,
+        advisories: r.advisories || [],
         product: productMap[r.repo] || null, repoClass: repoClassMap[r.repo] || null
       }));
-      downloadFile('vwc-audit.json', 'application/json', JSON.stringify(data, null, 2));
+      downloadFile('dep-health-audit.json', 'application/json', JSON.stringify(data, null, 2));
     }
 
+    // ── R7: Health Summary view ──
+    async function renderHealthTable() {
+      const body = document.getElementById('resultsBody');
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted);">Loading health summary...</td></tr>';
+
+      const repoStats = {};
+      for (const r of allResults) {
+        if (!repoStats[r.repo]) repoStats[r.repo] = { total: 0, upToDate: 0, vulnerable: 0, ecosystems: new Set() };
+        const s = repoStats[r.repo];
+        s.total++;
+        s.ecosystems.add(r.ecosystem || 'npm');
+        if (r.advisories?.length > 0) s.vulnerable++;
+        else if (r.diffType === 'current') s.upToDate++;
+      }
+
+      const org = document.getElementById('orgName').textContent.trim();
+      const token = document.getElementById('ghToken').value.trim();
+      const repoNames = Object.keys(repoStats);
+
+      const commitResults = await Promise.allSettled(
+        repoNames.map(async repo => {
+          try {
+            const data = await ghFetch(`https://api.github.com/repos/${org}/${repo}/commits?per_page=1`, token);
+            return { repo, date: data?.[0]?.commit?.author?.date || null };
+          } catch { return { repo, date: null }; }
+        })
+      );
+      for (const r of commitResults) {
+        if (r.status === 'fulfilled' && r.value.date) repoStats[r.value.repo].lastCommit = r.value.date;
+      }
+
+      body.innerHTML = '';
+      const sorted = repoNames.sort((a, b) => {
+        const fa = repoStats[a].total ? repoStats[a].upToDate / repoStats[a].total : 1;
+        const fb = repoStats[b].total ? repoStats[b].upToDate / repoStats[b].total : 1;
+        return fa - fb;
+      });
+
+      for (const repo of sorted) {
+        const s = repoStats[repo];
+        const freshness = s.total > 0 ? Math.round((s.upToDate / s.total) * 100) : 0;
+        const freshColor = freshness >= 80 ? 'var(--green)' : freshness >= 50 ? 'var(--amber)' : 'var(--red)';
+        const lastCommitStr = s.lastCommit ? new Date(s.lastCommit).toLocaleDateString() : '—';
+        const ecoList = [...s.ecosystems].join(', ');
+        const product = productMap[repo] || '—';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><a href="https://github.com/VectorLearning/${repo}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;text-decoration:none;">${repo}</a></td>
+          <td style="color:var(--text-muted);font-size:0.82rem;">${product}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="freshness-bar"><div class="freshness-fill" style="width:${freshness}%;background:${freshColor};"></div></div>
+              <span style="font-weight:600;color:${freshColor}">${freshness}%</span>
+              <span style="font-size:0.75rem;color:var(--text-muted)">(${s.upToDate}/${s.total})</span>
+            </div>
+          </td>
+          <td>${s.vulnerable > 0 ? `<span class="badge badge-dark-red">${s.vulnerable} CVE${s.vulnerable !== 1 ? 's' : ''}</span>` : '<span style="color:var(--text-muted);font-size:0.82rem;">—</span>'}</td>
+          <td style="font-size:0.8rem;">${ecoList}</td>
+          <td style="font-size:0.82rem;color:var(--text-muted);">${lastCommitStr}</td>
+          <td></td>`;
+        body.appendChild(tr);
+      }
+    }
+
+    // ── R8: setPivotView with health mode ──
     function setPivotView(view) {
       pivotView = view;
       document.getElementById('viewByRepo').classList.toggle('active', view === 'repo');
       document.getElementById('viewByComponent').classList.toggle('active', view === 'component');
-      document.getElementById('thFile').textContent = view === 'repo' ? 'File' : 'Repo / File';
-      if (filteredResults.length > 0) {
-        currentPage = 1;
-        renderTable(filteredResults);
+      document.getElementById('viewHealth').classList.toggle('active', view === 'health');
+
+      const toolbar = document.querySelector('.table-toolbar');
+      const pagination = document.getElementById('paginationToolbar');
+
+      if (view === 'health') {
+        toolbar.classList.add('hidden');
+        pagination.classList.add('hidden');
+        document.getElementById('thFile').textContent = 'Repo';
+        document.getElementById('thPackage').textContent = 'Product';
+        document.getElementById('thInstalled').textContent = 'Freshness';
+        document.getElementById('thLatest').textContent = 'CVEs';
+        document.getElementById('thStatus').textContent = 'Ecosystems';
+        document.getElementById('thType').textContent = 'Last Commit';
+        document.getElementById('thDetails').textContent = '';
+        if (allResults.length > 0) renderHealthTable();
+      } else {
+        toolbar.classList.remove('hidden');
+        document.getElementById('thFile').textContent = view === 'repo' ? 'File' : 'Repo / File';
+        document.getElementById('thPackage').textContent = 'Package';
+        document.getElementById('thInstalled').textContent = 'Installed';
+        document.getElementById('thLatest').textContent = 'Latest';
+        document.getElementById('thStatus').textContent = 'Status';
+        document.getElementById('thType').textContent = 'Type';
+        document.getElementById('thDetails').textContent = 'Details';
+        if (filteredResults.length > 0) {
+          currentPage = 1;
+          renderTable(filteredResults);
+        }
       }
     }
 
@@ -3006,6 +3550,15 @@
       document.getElementById('effortMajor').innerHTML = major > 0 ? `<span style="color:var(--red)">&#9679;</span> ${major} major` : '';
       document.getElementById('effortMinor').innerHTML = minor > 0 ? `<span style="color:var(--amber)">&#9679;</span> ${minor} minor` : '';
       document.getElementById('effortPatch').innerHTML = patch > 0 ? `<span style="color:var(--primary)">&#9679;</span> ${patch} patch` : '';
+      // R4: CVE count in banner
+      const vuln = results.filter(r => r.advisories?.length > 0).length;
+      const effortCVEs = document.getElementById('effortCVEs');
+      if (vuln > 0) {
+        effortCVEs.innerHTML = `<span style="color:#7f1d1d">&#9660;</span> ${vuln} vulnerable`;
+        effortCVEs.classList.remove('hidden');
+      } else {
+        effortCVEs.classList.add('hidden');
+      }
       document.getElementById('effortRepos').textContent = `across ${affectedRepos} repo${affectedRepos !== 1 ? 's' : ''}`;
       banner.classList.remove('hidden');
     }
@@ -3029,19 +3582,23 @@
       });
     }
 
+    // ── F1: filterTable with ecosystem + vulnerable filters ──
     function filterTable() {
       const q = document.getElementById('tableFilter').value.toLowerCase();
       const product = document.getElementById('filterProduct').value;
       const repoClass = document.getElementById('filterRepoClass').value;
       const status = document.getElementById('filterStatus').value;
+      const ecosystem = document.getElementById('filterEcosystem').value;
       currentPage = 1;
 
       filteredResults = allResults.filter(r => {
         if (product && productMap[r.repo] !== product) return false;
         if (repoClass && repoClassMap[r.repo] !== repoClass) return false;
-        if (status && r.diffType !== status) return false;
+        if (ecosystem && (r.ecosystem || 'npm') !== ecosystem) return false;
+        if (status === 'vulnerable' && !r.advisories?.length) return false;
+        if (status && status !== 'vulnerable' && r.diffType !== status) return false;
         if (q) {
-          const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType).toLowerCase();
+          const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType + ' ' + (r.ecosystem || 'npm')).toLowerCase();
           if (!text.includes(q)) return false;
         }
         return true;
