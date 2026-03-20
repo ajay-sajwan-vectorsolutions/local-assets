@@ -153,6 +153,58 @@
       align-items: center;
     }
 
+    .auto-refresh-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .auto-refresh-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .auto-refresh-toggle input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .auto-refresh-interval {
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      background: var(--surface-alt);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .auto-refresh-interval:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .auto-refresh-countdown {
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 3px 10px;
+    }
+
     .btn {
       padding: 10px 24px;
       border: none;
@@ -541,6 +593,65 @@
         transform: rotate(360deg);
       }
     }
+
+    .copy-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      vertical-align: middle;
+      transition: all 0.15s;
+      line-height: 1;
+    }
+
+    .copy-btn:hover {
+      color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .copy-btn.copied {
+      color: var(--green);
+    }
+
+    .effort-banner {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .effort-banner .effort-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
+    .effort-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 700;
+    }
+
+    .metric-delta {
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .metric-delta.improved { color: var(--green); }
+    .metric-delta.regressed { color: var(--red); }
+    .metric-delta.neutral { color: var(--text-muted); }
 
     .hidden {
       display: none !important;
@@ -1077,6 +1188,54 @@
       border-color: var(--primary);
     }
 
+    /* Table header actions */
+    .table-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .view-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .view-toggle-btn {
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: none;
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .export-btn {
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .export-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
       .container {
@@ -1189,6 +1348,20 @@
         <div class="progress-wrap" id="progressWrap">
           <div class="progress-bar" id="progressBar"></div>
         </div>
+        <div class="auto-refresh-row">
+          <label class="auto-refresh-toggle">
+            <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()">
+            Auto-refresh every
+          </label>
+          <select id="autoRefreshInterval" class="auto-refresh-interval" disabled onchange="onAutoRefreshIntervalChange()">
+            <option value="5">5 min</option>
+            <option value="10" selected>10 min</option>
+            <option value="15">15 min</option>
+            <option value="30">30 min</option>
+            <option value="60">60 min</option>
+          </select>
+          <span id="autoRefreshCountdown" class="auto-refresh-countdown hidden"></span>
+        </div>
       </div>
     </div>
 
@@ -1209,12 +1382,23 @@
           <div class="label">Up to Date</div>
           <div class="value">0</div>
           <div class="detail">on latest version</div>
+          <div class="metric-delta hidden" id="deltaUpToDate"></div>
         </div>
         <div class="metric-card amber" id="metricOutdated">
           <div class="label">Upgrades Available</div>
           <div class="value">0</div>
           <div class="detail">behind latest version</div>
+          <div class="metric-delta hidden" id="deltaOutdated"></div>
         </div>
+      </div>
+
+      <!-- Upgrade Effort Banner -->
+      <div class="effort-banner hidden" id="effortBanner">
+        <span class="effort-label">Org upgrade backlog:</span>
+        <span class="effort-item" id="effortMajor"></span>
+        <span class="effort-item" id="effortMinor"></span>
+        <span class="effort-item" id="effortPatch"></span>
+        <span id="effortRepos" style="color:var(--text-muted);font-size:0.82rem;"></span>
       </div>
 
       <!-- Charts -->
@@ -1240,6 +1424,14 @@
             <path d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
           </svg>
           Detailed Component Usage
+          <div class="table-header-actions">
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" id="viewByRepo" onclick="setPivotView('repo')">By Repo</button>
+              <button class="view-toggle-btn" id="viewByComponent" onclick="setPivotView('component')">By Component</button>
+            </div>
+            <button class="export-btn" onclick="exportCSV()">&#8659; CSV</button>
+            <button class="export-btn" onclick="exportJSON()">&#8659; JSON</button>
+          </div>
         </div>
         <div class="table-toolbar">
           <input class="filter-input" type="text" id="tableFilter" placeholder="Filter by repo or component..."
@@ -1250,13 +1442,21 @@
           <select class="toolbar-select" id="filterRepoClass" onchange="filterTable()">
             <option value="">All Classes</option>
           </select>
+          <select class="toolbar-select" id="filterStatus" onchange="filterTable()">
+            <option value="">All Statuses</option>
+            <option value="major">Major update</option>
+            <option value="minor">Minor update</option>
+            <option value="patch">Patch available</option>
+            <option value="current">Up to date</option>
+            <option value="unknown">Unknown</option>
+          </select>
         </div>
         <div style="overflow-x:clip;">
           <table>
             <thead>
               <tr>
-                <th>File</th>
-                <th>PACKAGE NAME</th>
+                <th id="thFile">File</th>
+                <th id="thPackage">Package</th>
                 <th>Installed</th>
                 <th>Latest</th>
                 <th>Status</th>
@@ -1482,8 +1682,30 @@
     let currentPage = 1;
     let pageSize = 25;
 
+    // Pivot view state
+    let pivotView = 'repo';
+
+    // Scan history (last scan stored in localStorage)
+    const SCAN_HISTORY_KEY = 'vwc-scan-last';
+
     // Scan abort controller
     let scanAbort = null;
+
+    // Auto-refresh state
+    let autoRefreshTimer = null;
+    let autoRefreshCountdownTimer = null;
+    let autoRefreshSecondsLeft = 0;
+
+    // Persist PAT to sessionStorage (clears on tab close)
+    document.getElementById('ghToken').addEventListener('input', function () {
+      if (this.value) sessionStorage.setItem('vwc-pat', this.value);
+      else sessionStorage.removeItem('vwc-pat');
+    });
+    // Restore PAT on page load
+    (function () {
+      const saved = sessionStorage.getItem('vwc-pat');
+      if (saved) document.getElementById('ghToken').value = saved;
+    })();
 
     // Default repos to pre-select after loading
     const DEFAULT_REPOS = ['ts-react', 'eval-pd-spa', 'lti-react'];
@@ -1533,6 +1755,60 @@
       if (scanAbort) {
         scanAbort.abort();
       }
+    }
+
+    // ── Auto-Refresh ──
+    function toggleAutoRefresh() {
+      const enabled = document.getElementById('autoRefreshToggle').checked;
+      document.getElementById('autoRefreshInterval').disabled = !enabled;
+      if (!enabled) {
+        clearAutoRefresh();
+        document.getElementById('autoRefreshCountdown').classList.add('hidden');
+      }
+      // If enabled, countdown will start after the next completed scan
+    }
+
+    function onAutoRefreshIntervalChange() {
+      // If a countdown is already running, restart it with the new interval
+      if (autoRefreshTimer !== null) {
+        scheduleAutoRefresh();
+      }
+    }
+
+    function clearAutoRefresh() {
+      if (autoRefreshTimer) { clearTimeout(autoRefreshTimer); autoRefreshTimer = null; }
+      if (autoRefreshCountdownTimer) { clearInterval(autoRefreshCountdownTimer); autoRefreshCountdownTimer = null; }
+      autoRefreshSecondsLeft = 0;
+    }
+
+    function scheduleAutoRefresh() {
+      const toggle = document.getElementById('autoRefreshToggle');
+      if (!toggle || !toggle.checked) return;
+
+      clearAutoRefresh();
+
+      const minutes = parseInt(document.getElementById('autoRefreshInterval').value, 10);
+      autoRefreshSecondsLeft = minutes * 60;
+
+      const countdownEl = document.getElementById('autoRefreshCountdown');
+      countdownEl.classList.remove('hidden');
+
+      function updateCountdown() {
+        if (autoRefreshSecondsLeft <= 0) return;
+        const m = Math.floor(autoRefreshSecondsLeft / 60);
+        const s = autoRefreshSecondsLeft % 60;
+        countdownEl.textContent = `Next refresh in ${m}:${String(s).padStart(2, '0')}`;
+        autoRefreshSecondsLeft--;
+      }
+
+      updateCountdown();
+      autoRefreshCountdownTimer = setInterval(updateCountdown, 1000);
+
+      autoRefreshTimer = setTimeout(() => {
+        if (autoRefreshCountdownTimer) { clearInterval(autoRefreshCountdownTimer); autoRefreshCountdownTimer = null; }
+        countdownEl.classList.add('hidden');
+        startScan();
+      }, minutes * 60 * 1000);
     }
 
     // ── Property Filters ──
@@ -1636,10 +1912,17 @@
 
         await Promise.all([repoFetchPromise, fetchPropertyValues(org, token)]);
 
-        // Pre-select defaults
+        // Pre-select from localStorage if available, else use defaults
         selectedRepos.clear();
-        for (const d of DEFAULT_REPOS) {
-          if (orgRepos.includes(d)) selectedRepos.add(d);
+        const savedRepos = JSON.parse(localStorage.getItem('vwc-selected-repos') || '[]');
+        if (savedRepos.length > 0) {
+          for (const r of savedRepos) {
+            if (orgRepos.includes(r)) selectedRepos.add(r);
+          }
+        } else {
+          for (const d of DEFAULT_REPOS) {
+            if (orgRepos.includes(d)) selectedRepos.add(d);
+          }
         }
 
         reposLoaded = true;
@@ -1701,6 +1984,7 @@
       } else {
         selectedRepos.add(name);
       }
+      localStorage.setItem('vwc-selected-repos', JSON.stringify([...selectedRepos]));
       const filter = document.getElementById('repoSearch').value;
       renderRepoPickerList(filter);
       updateRepoPickerTrigger();
@@ -1709,6 +1993,7 @@
     function removeRepoChip(name, event) {
       event.stopPropagation();
       selectedRepos.delete(name);
+      localStorage.setItem('vwc-selected-repos', JSON.stringify([...selectedRepos]));
       renderRepoPickerList(document.getElementById('repoSearch').value);
       updateRepoPickerTrigger();
     }
@@ -1726,6 +2011,7 @@
         for (const r of visible) selectedRepos.add(r);
       }
 
+      localStorage.setItem('vwc-selected-repos', JSON.stringify([...selectedRepos]));
       renderRepoPickerList(filter);
       updateRepoPickerTrigger();
       updateSelectAllButton();
@@ -2065,8 +2351,12 @@
         return;
       }
 
+      clearAutoRefresh();
+      document.getElementById('autoRefreshCountdown').classList.add('hidden');
+
       scanAbort = new AbortController();
       const signal = scanAbort.signal;
+      let scanCancelled = false;
 
       setLoading(true);
       suppressConsoleErrors();
@@ -2195,12 +2485,15 @@
         const skippedMsg = skipped > 0 ? ` (${skipped} repos skipped — no component usage found)` : '';
         renderDashboard(allResults, reposToScan.length, errors);
         setStatus(errors.length ? `Done with ${errors.length} error(s).${skippedMsg}` : `Scan complete.${skippedMsg}`);
+        scheduleAutoRefresh();
       } catch (err) {
         if (err.name === 'AbortError') {
+          scanCancelled = true;
           setStatus('Scan cancelled.');
           setProgress(100);
         } else {
           setStatus('Error: ' + err.message, 'error');
+          scheduleAutoRefresh();
         }
       } finally {
         restoreConsoleErrors();
@@ -2229,11 +2522,16 @@
         document.querySelector('#metricOutdated .detail').textContent = 'behind latest version';
       }
 
+      const histDiff = getScanHistoryDiff(results);
+      saveScanHistory(results);
+      applyHistoryDeltas(histDiff);
       renderCharts(results);
+      renderEffortBanner(results);
       currentPage = 1;
       document.getElementById('tableFilter').value = '';
       document.getElementById('filterProduct').value = '';
       document.getElementById('filterRepoClass').value = '';
+      document.getElementById('filterStatus').value = '';
       populateResultFilters(results);
       renderTable(results);
     }
@@ -2268,10 +2566,18 @@
               callbacks: {
                 label: ctx => {
                   const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                  return `${ctx.label}: ${ctx.raw} components (${((ctx.raw / total) * 100).toFixed(0)}%)`;
+                  return `${ctx.label}: ${ctx.raw} components (${((ctx.raw / total) * 100).toFixed(0)}%) — click to filter`;
                 }
               }
             }
+          },
+          onClick: (e, elements) => {
+            if (!elements.length) return;
+            const repo = repoLabels[elements[0].index];
+            document.getElementById('tableFilter').value = repo;
+            document.getElementById('filterStatus').value = '';
+            filterTable();
+            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }
       });
@@ -2303,7 +2609,17 @@
             x: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f1f5f9' } },
             y: { stacked: true, grid: { display: false } }
           },
-          plugins: { legend: { position: 'top', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } }
+          plugins: { legend: { position: 'top', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle' } } },
+          onClick: (e, elements) => {
+            if (!elements.length) return;
+            const compShort = compLabels[elements[0].index];
+            const datasetDiffTypes = ['current', 'patch', 'minor', 'major', 'unknown'];
+            const status = datasetDiffTypes[elements[0].datasetIndex] || '';
+            document.getElementById('tableFilter').value = `@vector-web-components/${compShort}`;
+            document.getElementById('filterStatus').value = status;
+            filterTable();
+            document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
       });
     }
@@ -2329,16 +2645,24 @@
       }
       noResults.classList.add('hidden');
 
-      // Sort: group by repo first, then by severity within each repo
-      results.sort((a, b) => {
-        const repoCompare = a.repo.localeCompare(b.repo);
-        if (repoCompare !== 0) return repoCompare;
-        const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
-        const da = diffOrder[a.diffType] ?? 5;
-        const db = diffOrder[b.diffType] ?? 5;
-        if (da !== db) return da - db;
-        return a.name.localeCompare(b.name);
-      });
+      // Sort based on pivot view
+      if (pivotView === 'component') {
+        results.sort((a, b) => {
+          const nameCompare = a.name.localeCompare(b.name);
+          if (nameCompare !== 0) return nameCompare;
+          return a.repo.localeCompare(b.repo);
+        });
+      } else {
+        results.sort((a, b) => {
+          const repoCompare = a.repo.localeCompare(b.repo);
+          if (repoCompare !== 0) return repoCompare;
+          const diffOrder = { major: 0, minor: 1, patch: 2, unknown: 3, current: 4 };
+          const da = diffOrder[a.diffType] ?? 5;
+          const db = diffOrder[b.diffType] ?? 5;
+          if (da !== db) return da - db;
+          return a.name.localeCompare(b.name);
+        });
+      }
 
       // Store sorted results for pagination
       filteredResults = results;
@@ -2361,12 +2685,19 @@
         const globalIdx = startIdx + pi;
         const r = pageResults[pi];
 
-        // Insert group header when repo changes
-        if (r.repo !== lastRepo) {
-          lastRepo = r.repo;
+        // Insert group header when grouping key changes
+        const groupKey = pivotView === 'component' ? r.name : r.repo;
+        if (groupKey !== lastRepo) {
+          lastRepo = groupKey;
           const groupRow = document.createElement('tr');
           groupRow.className = 'repo-group-header';
-          groupRow.innerHTML = `<td colspan="7">${r.repo}<span class="repo-group-count">${repoCountMap[r.repo]} component${repoCountMap[r.repo] !== 1 ? 's' : ''}</span></td>`;
+          if (pivotView === 'component') {
+            const shortComp = r.name.replace('@vector-web-components/', '');
+            const compCount = results.filter(x => x.name === r.name).length;
+            groupRow.innerHTML = `<td colspan="7">${shortComp}<span class="repo-group-count">${compCount} repo${compCount !== 1 ? 's' : ''}</span></td>`;
+          } else {
+            groupRow.innerHTML = `<td colspan="7">${r.repo}<span class="repo-group-count">${repoCountMap[r.repo]} component${repoCountMap[r.repo] !== 1 ? 's' : ''}</span></td>`;
+          }
           body.appendChild(groupRow);
         }
 
@@ -2376,10 +2707,10 @@
         const tr = document.createElement('tr');
         tr.dataset.index = globalIdx;
         tr.innerHTML = `
-          <td><span style="font-size:0.75rem;color:var(--text-muted)">${r.file}</span></td>
+          <td><a href="https://github.com/VectorLearning/${r.repo}/blob/main/${r.file}" target="_blank" rel="noopener noreferrer" style="font-size:0.75rem;color:var(--primary);text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${pivotView === 'component' ? r.repo + ' &rsaquo; ' + r.file : r.file}</a></td>
           <td>${shortName}</td>
           <td><span class="badge badge-gray">${r.version}</span></td>
-          <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' : '<span class="badge badge-gray">N/A</span>'}</td>
+          <td>${r.latestVersion ? '<span class="badge badge-green">' + r.latestVersion + '</span>' + (r.diffType !== 'current' ? ' <button class="copy-btn" title="Copy: npm install ' + r.name + '@' + r.latestVersion + '" onclick="copyUpgradeCmd(\'' + r.name + '\',\'' + r.latestVersion + '\',this)">&#128203;</button>' : '') : '<span class="badge badge-gray">N/A</span>'}</td>
           <td>${statusBadge(r)}</td>
           <td><span class="dep-type">${r.depType}</span></td>
           <td>${canExpand ? '<button class="upgrade-btn" onclick="toggleDetail(' + globalIdx + ', this)">View changes &#9662;</button>' : '&mdash;'}</td>
@@ -2573,15 +2904,142 @@
       btn.closest('tr').after(detailRow);
     }
 
+    function downloadFile(filename, mime, content) {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportCSV() {
+      if (!filteredResults.length) return;
+      const headers = ['Repo', 'File', 'Package', 'Installed', 'Latest', 'Status', 'Dep Type', 'Product', 'Repo-Class'];
+      const rows = filteredResults.map(r => [
+        r.repo, r.file, r.name, r.version, r.latestVersion || '', r.diffType,
+        r.depType, productMap[r.repo] || '', repoClassMap[r.repo] || ''
+      ]);
+      const csv = [headers, ...rows].map(row =>
+        row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+      ).join('\n');
+      downloadFile('vwc-audit.csv', 'text/csv;charset=utf-8', csv);
+    }
+
+    function exportJSON() {
+      if (!filteredResults.length) return;
+      const data = filteredResults.map(r => ({
+        repo: r.repo, file: r.file, package: r.name,
+        installedVersion: r.version, latestVersion: r.latestVersion || null,
+        status: r.diffType, depType: r.depType,
+        product: productMap[r.repo] || null, repoClass: repoClassMap[r.repo] || null
+      }));
+      downloadFile('vwc-audit.json', 'application/json', JSON.stringify(data, null, 2));
+    }
+
+    function setPivotView(view) {
+      pivotView = view;
+      document.getElementById('viewByRepo').classList.toggle('active', view === 'repo');
+      document.getElementById('viewByComponent').classList.toggle('active', view === 'component');
+      document.getElementById('thFile').textContent = view === 'repo' ? 'File' : 'Repo / File';
+      if (filteredResults.length > 0) {
+        currentPage = 1;
+        renderTable(filteredResults);
+      }
+    }
+
+    function saveScanHistory(results) {
+      const data = {
+        results: results.map(r => ({ repo: r.repo, name: r.name, file: r.file, diffType: r.diffType })),
+        timestamp: new Date().toISOString()
+      };
+      try { localStorage.setItem(SCAN_HISTORY_KEY, JSON.stringify(data)); } catch (e) { /* storage full */ }
+    }
+
+    function getScanHistoryDiff(currentResults) {
+      try {
+        const raw = localStorage.getItem(SCAN_HISTORY_KEY);
+        if (!raw) return null;
+        const prev = JSON.parse(raw);
+        const prevUpToDate = prev.results.filter(r => r.diffType === 'current').length;
+        const prevOutdated = prev.results.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').length;
+        const currUpToDate = currentResults.filter(r => r.diffType === 'current').length;
+        const currOutdated = currentResults.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').length;
+        return {
+          upToDateDelta: currUpToDate - prevUpToDate,
+          outdatedDelta: currOutdated - prevOutdated,
+          prevTimestamp: prev.timestamp
+        };
+      } catch (e) { return null; }
+    }
+
+    function applyHistoryDeltas(diff) {
+      const upEl = document.getElementById('deltaUpToDate');
+      const outEl = document.getElementById('deltaOutdated');
+      if (!diff) { upEl.classList.add('hidden'); outEl.classList.add('hidden'); return; }
+
+      function deltaText(delta, higherIsBetter) {
+        if (delta === 0) return { text: '&#8212; no change', cls: 'neutral' };
+        const arrow = delta > 0 ? '&#8593;' : '&#8595;';
+        const sign = delta > 0 ? '+' : '';
+        const improved = higherIsBetter ? delta > 0 : delta < 0;
+        return { text: `${arrow} ${sign}${delta} vs last scan`, cls: improved ? 'improved' : 'regressed' };
+      }
+
+      const upD = deltaText(diff.upToDateDelta, true);
+      upEl.innerHTML = upD.text;
+      upEl.className = `metric-delta ${upD.cls}`;
+      upEl.classList.remove('hidden');
+
+      const outD = deltaText(diff.outdatedDelta, false);
+      outEl.innerHTML = outD.text;
+      outEl.className = `metric-delta ${outD.cls}`;
+      outEl.classList.remove('hidden');
+    }
+
+    function renderEffortBanner(results) {
+      const banner = document.getElementById('effortBanner');
+      const major = results.filter(r => r.diffType === 'major').length;
+      const minor = results.filter(r => r.diffType === 'minor').length;
+      const patch = results.filter(r => r.diffType === 'patch').length;
+      const affectedRepos = new Set(results.filter(r => r.diffType !== 'current' && r.diffType !== 'unknown').map(r => r.repo)).size;
+      if (major + minor + patch === 0) { banner.classList.add('hidden'); return; }
+      document.getElementById('effortMajor').innerHTML = major > 0 ? `<span style="color:var(--red)">&#9679;</span> ${major} major` : '';
+      document.getElementById('effortMinor').innerHTML = minor > 0 ? `<span style="color:var(--amber)">&#9679;</span> ${minor} minor` : '';
+      document.getElementById('effortPatch').innerHTML = patch > 0 ? `<span style="color:var(--primary)">&#9679;</span> ${patch} patch` : '';
+      document.getElementById('effortRepos').textContent = `across ${affectedRepos} repo${affectedRepos !== 1 ? 's' : ''}`;
+      banner.classList.remove('hidden');
+    }
+
+    function copyUpgradeCmd(pkg, version, btn) {
+      const cmd = `npm install ${pkg}@${version}`;
+      navigator.clipboard.writeText(cmd).then(() => {
+        btn.classList.add('copied');
+        btn.title = 'Copied!';
+        setTimeout(() => { btn.classList.remove('copied'); btn.title = `Copy: ${cmd}`; }, 1500);
+      }).catch(() => {
+        // Fallback for browsers without clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = cmd;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1500);
+      });
+    }
+
     function filterTable() {
       const q = document.getElementById('tableFilter').value.toLowerCase();
       const product = document.getElementById('filterProduct').value;
       const repoClass = document.getElementById('filterRepoClass').value;
+      const status = document.getElementById('filterStatus').value;
       currentPage = 1;
 
       filteredResults = allResults.filter(r => {
         if (product && productMap[r.repo] !== product) return false;
         if (repoClass && repoClassMap[r.repo] !== repoClass) return false;
+        if (status && r.diffType !== status) return false;
         if (q) {
           const text = (r.repo + ' ' + r.name + ' ' + r.file + ' ' + r.version + ' ' + (r.latestVersion || '') + ' ' + r.depType).toLowerCase();
           if (!text.includes(q)) return false;
