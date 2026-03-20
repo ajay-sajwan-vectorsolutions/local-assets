@@ -27,6 +27,11 @@ A single-file (`index.html`) GitHub Pages dashboard that audits dependency healt
 - Commits go directly to `origin/main`
 - `.claude/` is in `.gitignore`
 
+## ⚠️ Branch Rules
+- **`feature/feature-recommendations` must NEVER be merged into `main`**
+- This branch is a permanent sandbox for experimentation and feature exploration only
+- Do NOT raise a PR from this branch to `main`, do NOT suggest merging it, do NOT fast-forward main from it
+
 ## Scan Flow
 1. **Phase 0**: GitHub Code Search pre-filters selected repos for `@vector-web-components` in package.json
 2. **Phase 1**: Scan matching repos concurrently (batches of 5) for component dependencies
